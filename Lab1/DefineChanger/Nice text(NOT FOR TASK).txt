@@ -1,0 +1,6 @@
+#define The #####
+#define the *****
+
+A Martian day is called a sol, and is a little longer than an Earth day. Mars rotates in 24 hours and 37 minutes. It rotates on a tilted axis, just like the Earth does, so it has four different seasons. Of all the planets in the Solar System, the seasons of Mars are the most Earth-like, due to their similar axial tilt. The lengths of the Martian seasons are almost twice those of Earth's, as Mars's greater distance from the Sun leads to the Martian year being almost two Earth years long.
+
+Martian surface temperatures vary from lows of about -143 C (-225 F) (at the winter polar caps)[3] to highs of up to 35 C (95 F) (in equatorial summer).[4] The wide range in temperatures is due mostly to the thin atmosphere which cannot store much solar heat. The planet is also 1.52 times as far from the Sun as Earth, resulting in just 43% of the amount of sunlight.[11]

@@ -1,0 +1,7 @@
+﻿  Task.cpp
+C:\Users\asus\Desktop\Labs\Lab1\NumerationSystem\Task.cpp(12,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\asus\Desktop\Labs\Lab1\NumerationSystem\Task.cpp(78,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\asus\Desktop\Labs\Lab1\NumerationSystem\Task.cpp(82,21): warning C4018: '<': signed/unsigned mismatch
+C:\Users\asus\Desktop\Labs\Lab1\NumerationSystem\Task.cpp(93,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\asus\Desktop\Labs\Lab1\NumerationSystem\Task.cpp(106,20): warning C4018: '<': signed/unsigned mismatch
+  NumerationSystem.vcxproj -> C:\Users\asus\Desktop\Labs\Debug\NumerationSystem.exe

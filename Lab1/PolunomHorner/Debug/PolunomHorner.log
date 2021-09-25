@@ -1,0 +1,5 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(491,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (ConvexPolynom.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  Task.cpp
+C:\Паша\DoctorC++\Third Sem\PolunomHorner\PolunomHorner\Task.cpp(10,20): warning C4018: '<': signed/unsigned mismatch
+C:\Паша\DoctorC++\Third Sem\PolunomHorner\PolunomHorner\Task.cpp(17,9): warning C4018: '<': signed/unsigned mismatch
+  PolunomHorner.vcxproj -> C:\Паша\DoctorC++\Third Sem\PolunomHorner\Debug\PolynomHorner.exe

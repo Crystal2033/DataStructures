@@ -1,0 +1,31 @@
+read(x, 036);
+read(a, 14);
+read(b, 18);
+
+f:=a<>x;
+write(f, 10);
+
+d:=f&b;
+write(d, 2);
+
+e:=d->a;
+write(e, 36);
+
+z:=a<>d;
+write(z, 36);
+
+k:=a<-z;
+write(k, 10);
+
+t:=a+>b;
+write(t, 36);
+
+m:=x?e;
+write(m, 36);
+
+j:=m<>x;
+write(J, 36);
+
+
+
+

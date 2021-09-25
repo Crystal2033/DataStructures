@@ -1,0 +1,3 @@
+#define A OOOOOOOOOO
+
+A ##### planet is A also 1.52 times as

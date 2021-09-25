@@ -1,0 +1,5 @@
+﻿  Task.cpp
+C:\Паша\DoctorC++\Third Sem\SubstrSearching\SubstrSearching\Task.cpp(35,20): warning C4018: '<': signed/unsigned mismatch
+C:\Паша\DoctorC++\Third Sem\SubstrSearching\SubstrSearching\Task.cpp(43,22): warning C4018: '<': signed/unsigned mismatch
+C:\Паша\DoctorC++\Third Sem\SubstrSearching\SubstrSearching\Task.cpp(119,20): warning C4018: '<': signed/unsigned mismatch
+  SubstrSearching.vcxproj -> C:\Паша\DoctorC++\Third Sem\SubstrSearching\Debug\SubstrSearching.exe

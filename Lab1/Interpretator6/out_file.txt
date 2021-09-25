@@ -1,0 +1,109 @@
+----------------------------
+1
+READ(X,036)
+Was input: X = 3(36)
+----------------------------
+2
+READ(A,14)
+Was input: A = 3(14)
+----------------------------
+3
+READ(B,18)
+Was input: B = 3(18)
+----------------------------
+4
+F:=A<>X
+Your operation: <>
+First operand: A
+Second operand: X
+Result operand: F
+Data was successfully inserted.
+----------------------------
+5
+WRITE(F,10)
+Output data from <WRITE>:  F = 0(10)
+----------------------------
+6
+D:=F&B
+Your operation: &
+First operand: F
+Second operand: B
+Result operand: D
+Data was successfully inserted.
+----------------------------
+7
+WRITE(D,2)
+Output data from <WRITE>:  D = 0(2)
+----------------------------
+8
+E:=D->A
+Your operation: ->
+First operand: D
+Second operand: A
+Result operand: E
+Data was successfully inserted.
+----------------------------
+9
+WRITE(E,36)
+Output data from <WRITE>:  E = 1(36)
+----------------------------
+10
+Z:=A<>D
+Your operation: <>
+First operand: A
+Second operand: D
+Result operand: Z
+Data was successfully inserted.
+----------------------------
+11
+WRITE(Z,36)
+Output data from <WRITE>:  Z = 3(36)
+----------------------------
+12
+K:=A<-Z
+Your operation: <-
+First operand: A
+Second operand: Z
+Result operand: K
+Data was successfully inserted.
+----------------------------
+13
+WRITE(K,10)
+Output data from <WRITE>:  K = 1(10)
+----------------------------
+14
+T:=A+>B
+Your operation: +>
+First operand: A
+Second operand: B
+Result operand: T
+Data was successfully inserted.
+----------------------------
+15
+WRITE(T,36)
+Output data from <WRITE>:  T = 0(36)
+----------------------------
+16
+M:=X?E
+Your operation: ?
+First operand: X
+Second operand: E
+Result operand: M
+Data was successfully inserted.
+----------------------------
+17
+WRITE(M,36)
+Output data from <WRITE>:  M = 2(36)
+----------------------------
+18
+J:=M<>X
+Your operation: <>
+First operand: M
+Second operand: X
+Result operand: J
+Data was successfully inserted.
+----------------------------
+19
+WRITE(J,36)
+Output data from <WRITE>:  J = 1(36)
+----------------------------

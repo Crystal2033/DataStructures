@@ -1,0 +1,5 @@
+﻿  Task.cpp
+C:\Users\asus\Desktop\Labs\Lab1\ConvexPolygon\Task.cpp(41,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\asus\Desktop\Labs\Lab1\ConvexPolygon\Task.cpp(75,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\asus\Desktop\Labs\Lab1\ConvexPolygon\Task.cpp(97,20): warning C4018: '<': signed/unsigned mismatch
+  ConvexPolygon.vcxproj -> C:\Users\asus\Desktop\Labs\Debug\ConvexPolygon.exe
