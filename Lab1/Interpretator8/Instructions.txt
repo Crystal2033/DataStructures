@@ -1,0 +1,126 @@
+[left= (op)()]
+[100 output 2;
+output(98);
+A = input(16); [10]
+B = input(2);  [1111]
+C = input();   [2]
+E = A add B;
+D = B sub C;
+F = A pow C;
+E output 10;
+D output 10;
+output(F);]
+
+[left= op()]
+[output(100, 2);
+output(98);
+A = input(16); [10]
+B = input(2);  [1111]
+C = input();   [2]
+E = add(A, B);
+D = sub(B, C);
+F = pow(A, C);
+output(D, 10);
+output(D);
+output(D);
+output(F);
+a = input();]
+
+[left=  ()op]
+[(100, 2)output;
+(98)output;
+A = (16)input; [10]
+B = (2)input;  [1111]
+C = ()input;   [2]
+E = (A, B)add;
+D = (B, C)sub;
+F = (A, C)pow;
+(D, 10)output;
+(D)output;
+(D)output;
+(F)output;
+a = ()input;]
+
+[left= ()(op)]
+[100 output 2;
+(98)output;
+A = (16)input; [10]
+B = (2)input;  [1111]
+C = ()input;   [2]
+E = A add B;
+
+D = B sub C;
+F = A pow C;
+E output 10;
+D output 10;
+(F)output;]
+
+[-----------------------------------------]
+
+[right= (op)()]
+[100 output 2;
+output(98);
+input(16) = A; [10]
+input(2) = B;  [1111]
+input() = C;   [2]
+A add B = E;
+B sub C = D;
+A pow C = F;
+E output 10;
+D output 10;
+output(F);]
+
+[right= op()]
+[output(100, 2);
+output(98);
+input(16) = A; [10]
+input(2)= subbar;  [1111]
+input() = C;   [2]
+add(A, subbar) = E;
+sub(subbar, C) = D;
+pow(A, C) = F;
+output(D, 10);
+output(D);
+output(D);
+output(F);
+input() = a;]
+
+[
+right=  ()op  -------   add   sum  --------    sub prod  ---   pow in_my_pow  ---  input in   ----   output print    ----   = ravno]
+[(100, 2)print;
+(98)print;
+(16)in ravno A; [10]
+(2)inravnoB;  [1111]
+()in ravno C;   [2]
+(A, B)sumravno E;
+(B, C)prodravno D;
+(A, C)in_my_powravnoF;
+(D, 10)print;
+(D)print;
+(D)print;
+(F)print;
+()in ravno a;
+(a, 2)print;]
+
+[right= ()(op)]
+[100 output 2;
+(98)output;
+(16)input = A; [10]
+(2)input = B;  [1111]
+()input = C;   [2]
+A add B = E;
+
+B sub C = D;
+A pow C = F;
+E output 10;
+D output 10;
+(F)output;]
+
+A = add(10, 22);
+B = input(16);
+C = sub(A, B);
+output(A);
+output(B);
+output(C);
+
+
