@@ -104,6 +104,14 @@ int from_base_to_decimal(const std::string& num, const int base)
 	}
 	if (num[0] == '-')
 	{
+		if (num.length() == 1) //only -
+		{
+			throw MyException("There is error in your number. Your number can`t consists only '-'.");
+		}
+		if (!isdigit(num[1]))
+		{
+			throw MyException("There is error in your number. Your number can consists only one '-'.");
+		}
 		std::string positive_num = num;
 		positive_num.erase(0, 1);
 		return -from_base_to_decimal(positive_num, base);
