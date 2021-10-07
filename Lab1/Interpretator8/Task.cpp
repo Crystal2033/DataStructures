@@ -102,6 +102,12 @@ int from_base_to_decimal(const std::string& num, const int base)
 	{
 		throw MyException("There is error in your numeric system and number.");
 	}
+	if (num[0] == '-')
+	{
+		std::string positive_num = num;
+		positive_num.erase(0, 1);
+		return -from_base_to_decimal(positive_num, base);
+	}
 	unsigned int result = 0;
 	for (int i = 0; i < num.length(); i++)
 	{
@@ -653,7 +659,7 @@ int Interpretator::interpretate_instr(const char* instr_file_name)
 int Interpretator::get_num_from_var(const std::string operand)
 {
 	int operand_number;
-	if (isdigit(operand[0])) //либо это число; либо это переменная, начинающаяся с цифры.
+	if (isdigit(operand[0]) || operand[0] == '-') //либо это число; либо это переменная, начинающаяся с цифры.
 	{
 		if (!is_numeric_system_correct(operand, 10))
 		{
@@ -742,7 +748,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 					tmp_str.clear();
 					if (index_of_find == 0) //output. OR ERROR.
 					{
-						regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([\\(])([\\w]+)([\\,]*)([\\w]*)([\\)])";
+						regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])";
 						if (!std::regex_match(str.c_str(), result_of_reg, regular))
 						{
 							throw MyException("Wrong instruction. Regular check error.");
@@ -807,7 +813,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 						}
 						tmp_str = str;
 						tmp_str.erase(0, index_of_assign + assignment_symbol.length());
-						regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)(\\()([\\w]+)(\\,)([\\w]+)(\\))";
+						regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)(\\()([\\w\\-]+)(\\,)([\\w\\-]+)(\\))";
 						if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //could be input
 						{
 							if (this->operations_list[i].first.second == ">>") //input
@@ -899,7 +905,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 					tmp_str.clear();
 					if (str[0] == '(') //output. OR ERROR.
 					{
-						regular = "([\\(])([\\w]+)([\\,]*)([\\w]*)([\\)])([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
+						regular = "([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
 						if (!std::regex_match(str.c_str(), result_of_reg, regular))
 						{
 							throw MyException("Wrong instruction. Regular check error.");
@@ -967,7 +973,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 						}
 						tmp_str = str;
 						tmp_str.erase(0, index_of_assign + assignment_symbol.length());
-						regular = "(\\()([\\w]+)(\\,)([\\w]+)(\\))([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
+						regular = "(\\()([\\w\\-]+)(\\,)([\\w\\-]+)(\\))([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
 						if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //could be input
 						{
 							if (this->operations_list[i].first.second == ">>") //input
@@ -1073,7 +1079,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 						continue;
 					}
 
-					regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w]+)([ ]*)([\\)])([ ]*)";
+					regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)";
 					if (std::regex_match(str.c_str(), result_of_reg, regular)) // output(what_to_output);
 					{
 						if (result_of_reg[2] != this->operations_list[i].first.first)
@@ -1093,7 +1099,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 					}
 					//else
 					//a output b;
-					regular = "([ ]*)([\\w]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w]+)([ ]*)";
+					regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
 					if (std::regex_match(str.c_str(), result_of_reg, regular))
 					{
 						found_operation = true;
@@ -1178,7 +1184,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 						break;
 					}
 					//остальные операции (add, sub, mult и т.д.)
-					regular = "([ ]*)([\\w]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w]+)([ ]*)";
+					regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
 					if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //нашлась инструкция
 					{
 						throw MyException("Error syntaxis of your instruction, please, check it out and try again.");
@@ -1239,7 +1245,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 						continue;
 					}
 
-					regular = "([ ]*)([\\(])([ ]*)([\\w]+)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)";
+					regular = "([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)";
 					if (std::regex_match(str.c_str(), result_of_reg, regular)) // output(what_to_output);
 					{
 						if (result_of_reg[8] != this->operations_list[i].first.first)
@@ -1259,7 +1265,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 					}
 					//else
 					//a output b;
-					regular = "([ ]*)([\\w]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w]+)([ ]*)";
+					regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
 					if (std::regex_match(str.c_str(), result_of_reg, regular))
 					{
 						found_operation = true;
@@ -1344,7 +1350,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 						break;
 					}
 					//остальные операции (add, sub, mult и т.д.)
-					regular = "([ ]*)([\\w]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w]+)([ ]*)";
+					regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
 					if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //нашлась инструкция
 					{
 						throw MyException("Error syntaxis of your instruction, please, check it out and try again.");
@@ -1416,7 +1422,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 							continue;
 						}
 
-						regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([\\(])([\\w]+)([\\,]*)([\\w]*)([\\)])";
+						regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])";
 						if (!std::regex_match(str.c_str(), result_of_reg, regular))
 						{
 							throw MyException("Wrong instruction. Regular check error.");
@@ -1537,7 +1543,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 						}
 						tmp_str = str;
 						tmp_str.erase(index_of_assign);
-						regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)(\\()([\\w]+)(\\,)([\\w]+)(\\))";
+						regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)(\\()([\\w\\-]+)(\\,)([\\w\\-]+)(\\))";
 						if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) 
 						{
 							throw MyException("Wrong instruction. Regular check error.");
@@ -1604,7 +1610,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 						continue;
 					}
 					
-					regular = "([\\(])([\\w]+)([\\,]*)([\\w]*)([\\)])([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
+					regular = "([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
 					if (!std::regex_match(str.c_str(), result_of_reg, regular))
 					{
 						throw MyException("Wrong instruction. Regular check error.");
@@ -1773,7 +1779,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 							continue;
 						}
 						
-						regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w]+)([ ]*)([\\)])([ ]*)";
+						regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)";
 						if (std::regex_match(str.c_str(), result_of_reg, regular)) // output(what_to_output);
 						{
 							if (result_of_reg[2] != this->operations_list[i].first.first)
@@ -1793,7 +1799,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 						}
 						//else
 						//a output b;
-						regular = "([ ]*)([\\w]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w]+)([ ]*)";
+						regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
 						if (std::regex_match(str.c_str(), result_of_reg, regular))
 						{
 							found_operation = true;
@@ -1878,7 +1884,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 							break;
 						}
 						//остальные операции (add, sub, mult и т.д.)
-						regular = "([ ]*)([\\w]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w]+)([ ]*)";
+						regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
 						if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //нашлась инструкция
 						{
 							throw MyException("Error syntaxis of your instruction, please, check it out and try again.");
@@ -1939,7 +1945,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 						continue;
 					}
 
-					regular = "([ ]*)([\\(])([ ]*)([\\w]+)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)";
+					regular = "([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)";
 					if (std::regex_match(str.c_str(), result_of_reg, regular)) // output(what_to_output);
 					{
 						if (result_of_reg[8] != this->operations_list[i].first.first)
@@ -1959,7 +1965,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 					}
 					//else
 					//a output b;
-					regular = "([ ]*)([\\w]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w]+)([ ]*)";
+					regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
 					if (std::regex_match(str.c_str(), result_of_reg, regular))
 					{
 						found_operation = true;
@@ -2044,7 +2050,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 						break;
 					}
 					//остальные операции (add, sub, mult и т.д.)
-					regular = "([ ]*)([\\w]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w]+)([ ]*)";
+					regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
 					if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //нашлась инструкция
 					{
 						throw MyException("Error syntaxis of your instruction, please, check it out and try again.");
