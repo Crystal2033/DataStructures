@@ -116,9 +116,11 @@ E output 10;
 D output 10;
 (F)output;]
 
-A = add(--10, -22);
-output(A);
 B = input(16);
+A = add(-10, -22);
+output(-64, 2);
+output(A, 10);
+[B = input(16);]
 C = sub(A, B);
 output(A);
 output(B);

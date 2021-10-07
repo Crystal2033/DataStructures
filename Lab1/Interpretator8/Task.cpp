@@ -111,6 +111,10 @@ int from_base_to_decimal(const std::string& num, const int base)
 	unsigned int result = 0;
 	for (int i = 0; i < num.length(); i++)
 	{
+		if (!isalnum(num[i]))
+		{
+			throw MyException("There is error in your number. It should consists only letters or digits.");
+		}
 		result = result * base + (isdigit(num[i]) ? num[i] - '0' : toupper(num[i]) - 'A' + 10);
 	}
 	return result;
