@@ -1,22 +1,24 @@
 [left= (op)()]
-[100 output 2;
+[addbar = input(2);
+addbar output 2;
 output(98);
-A = input(16); [10]
+A = input(10); [10]
 B = input(2);  [1111]
+B output 2;
+output(B);
 C = input();   [2]
-E = A add B;
-D = B sub C;
-F = A pow C;
-E output 10;
-D output 10;
-output(F);]
+E = A add -100;
+output(E);]
+
 
 [left= op()]
 [output(100, 2);
 output(98);
 A = input(16); [10]
 B = input(2);  [1111]
-C = input();   [2]
+addbar = input(2);
+output(addbar);
+[C = input();   [2]
 E = add(A, B);
 D = sub(B, C);
 F = pow(A, C);
@@ -24,7 +26,8 @@ output(D, 10);
 output(D);
 output(D);
 output(F);
-a = input();]
+a = input();]]
+
 
 [left=  ()op]
 [(100, 2)output;
@@ -58,32 +61,37 @@ D output 10;
 [-----------------------------------------]
 
 [right= (op)()]
-[100 output 2;
+[input(2) = addbar;
+addbar output 10;
 output(98);
 input(16) = A; [10]
 input(2) = B;  [1111]
 input() = C;   [2]
 A add B = E;
 B sub C = D;
-A pow C = F;
+[A pow C = F;
 E output 10;
 D output 10;
-output(F);]
+output(F);]]
 
 [right= op()]
-[output(100, 2);
+[input() = addbar;
+output(addbar, 2);
 output(98);
+add(addbar, 2 )=a;
+output(a);
 input(16) = A; [10]
-input(2)= subbar;  [1111]
+input(2)= addbar;  [1111]
+output(addbar, 16);
 input() = C;   [2]
-add(A, subbar) = E;
+[add(A, subbar) = E;
 sub(subbar, C) = D;
 pow(A, C) = F;
 output(D, 10);
 output(D);
 output(D);
 output(F);
-input() = a;]
+input() = a;]]
 
 [
 right=  ()op  -------   add   sum  --------    sub prod  ---   pow in_my_pow  ---  input in   ----   output print    ----   = ravno]
@@ -102,13 +110,30 @@ right=  ()op  -------   add   sum  --------    sub prod  ---   pow in_my_pow  --
 ()in ravno a;
 (a, 2)print;]
 
+[right= op()]
+[(100, 2)output;
+(98)output;
+(16)input = A; [10]
+(2)input= addbar;  [1111]
+(addbar, 16)output;
+[()input = C;   [2]
+(A, subbar)add = E;
+(subbar, C)sub = D;
+(A, C)pow = F;
+(D, 10)output;
+(D)output;
+(D)output;
+(F)output;
+()input = a;]]
+
 [right= ()(op)]
-[100 output 2;
+(2)input = addbar;
+addbar output 2;
 (98)output;
 (16)input = A; [10]
 (2)input = B;  [1111]
 ()input = C;   [2]
-A add B = E;
+[A add B = E;
 
 B sub C = D;
 A pow C = F;
@@ -116,14 +141,29 @@ E output 10;
 D output 10;
 (F)output;]
 
-B = input(16);
-A = add(-10, -22);
+[B = input(16);
+S = mult(-2, 1);
+C = pow(2, 10);
+c = pow(2, 10);
+q = add(c, C);
+output(q);
+output(C);
+output(B);
+A = add(10, 2);
+C = mult(5, -10);
+output(C);
+D = div(A, 12);
+output(D);
+X = rem(A, 12);
+output(X);
+output(D);
+x = rem(B, 1);
 output(-64, 2);
 output(A, 10);
 [B = input(16);]
 C = sub(A, B);
 output(A);
-output(B);
-output(C);
+
+output(C);]
 
 

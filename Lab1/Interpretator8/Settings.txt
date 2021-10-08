@@ -2,10 +2,10 @@
 #op()
 
 
-#right=
+right=
 
 #()op
-#()(op)
+()(op)
 #(op)()
 
 #add   sum

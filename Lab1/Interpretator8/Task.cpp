@@ -7,11 +7,11 @@
 #include<string>
 #include<regex>
 #include<string>
-//#include<list>
 #include<map>
-#include <chrono>
+//#include <chrono>
+
 /// <summary>
-/// Писать раздельно left=, то есть left =  - нельзя, иначе теряется смысл контекста, не понятно, это настрока или это синоним.
+/// Писать раздельно left= (то есть left =) - нельзя, иначе теряется смысл контекста, не понятно, это настрока или это синоним.
 /// SavedSettings должен содержать какие-либо синонимы.
 /// </summary>
 
@@ -174,11 +174,20 @@ private:
 	int get_num_from_var(const std::string operand);
 	int get_base_from_str(const std::string base_str);
 	bool is_var_not_conflict_with_oper(const std::string& var);
+	void left_and_op_before(const std::string& str);
+	void left_and_op_after(const std::string& str);
+	void left_and_op_un_bef_between(const std::string& str);
+	void left_and_op_un_aft_between(const std::string& str);
+
+	void right_and_op_before(const std::string& str);
+	void right_and_op_after(const std::string& str);
+	void right_and_op_un_bef_between(const std::string& str);
+	void right_and_op_un_aft_between(const std::string& str);
 
 
 public:
 	void set_settings(const char* settings_file_name);
-	int interpretate_instr(const char* instr_file_name); //mb void is better.
+	void interpretate_instr(const char* instr_file_name); //mb void is better.
 	Interpretator();
 	
 };
@@ -556,7 +565,7 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 
 }
 
-int Interpretator::interpretate_instr(const char* instr_file_name)
+void Interpretator::interpretate_instr(const char* instr_file_name)
 {
 	assignment_symbol = operations_list[9].first.first;
 	std::ifstream file_with_instr;
@@ -651,7 +660,7 @@ int Interpretator::interpretate_instr(const char* instr_file_name)
 				}
 				if (space_counter == instruction.length())
 				{
-					return 0;
+					return;
 				}
 			}
 			throw MyException("Your instruction is incorrect.");
@@ -664,7 +673,7 @@ int Interpretator::interpretate_instr(const char* instr_file_name)
 	{
 		std::cout << blue << "-----------------------------------------" << white << std::endl;
 	}
-	return 0;
+	return;
 }
 
 
@@ -675,7 +684,7 @@ int Interpretator::get_num_from_var(const std::string operand)
 	{
 		if (!is_numeric_system_correct(operand, 10))
 		{
-			throw MyException("Variable cannot start with a digit.");
+			throw MyException("Variable cannot start with a digit or punctuation symbol.");
 		}
 		operand_number = from_base_to_decimal(operand, 10);
 	}
@@ -720,7 +729,7 @@ int Interpretator::get_base_from_str(const std::string base_str)
 	return base;
 }
 
-void Interpretator::parse_and_solve(const std::string& str)
+void Interpretator::left_and_op_before(const std::string& str)
 {
 	std::string first_operand_str;
 	std::string second_operand_str;
@@ -738,778 +747,98 @@ void Interpretator::parse_and_solve(const std::string& str)
 	std::string tmp_str;
 	bool found_operation = false;
 	int index_of_find = -1;
-	if (this->is_res_left)
+
+	for (int i = 0; i < this->value_of_oper_list - 1; i++) //в последнем элементе лежит знак операции присваивания, ее не нужно искать.
 	{
-		if (this->is_op_before && !this->is_op_between) 
-		/*
-		* perem = op(op1, op2); peremravnoop(op1, op2);
-		* 
-		* output(perem, base); output(perem);
-		* peremravnoinput(base);  peremravnoinput();
-		*/
+		index_of_find = str.find(this->operations_list[i].first.first);
+		if (index_of_find != std::string::npos) //найдена какая-то инструкция.
 		{
-			for (int i = 0; i < this->value_of_oper_list - 1; i++) //в последнем элементе лежит знак операции присваивания, ее не нужно искать.
+			first_operand_str.clear();
+			second_operand_str.clear();
+			result_of_instr_str.clear();
+			base_str.clear();
+			tmp_str.clear();
+			if (index_of_find == 0) //output. OR ERROR.
 			{
-				index_of_find = str.find(this->operations_list[i].first.first);
-				if (index_of_find != std::string::npos) //найдена какая-то инструкция.
+				regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])";
+				if (!std::regex_match(str.c_str(), result_of_reg, regular))
 				{
-					first_operand_str.clear();
-					second_operand_str.clear();
-					result_of_instr_str.clear();
-					base_str.clear();
-					tmp_str.clear();
-					if (index_of_find == 0) //output. OR ERROR.
-					{
-						regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])";
-						if (!std::regex_match(str.c_str(), result_of_reg, regular))
-						{
-							throw MyException("Wrong instruction. Regular check error.");
-						}
-						if (result_of_reg[1] != this->operations_list[i].first.first || (this->operations_list[i].first.second != "<<"))
-						{
-							continue;
-						}
-
-						found_operation = true;
-						first_operand_str = result_of_reg[3];
-						first_operand_number = get_num_from_var(first_operand_str);
-						std::string help_str;
-						help_str = result_of_reg[4];
-						if (result_of_reg[5].length() != 0)
-						{
-							if (help_str.length() > 1)
-							{
-								throw MyException("Too many <,> in your instruction.");
-							}
-							base_str = result_of_reg[5];
-							base = get_base_from_str(base_str);
-						}
-						else
-						{
-							if (help_str.length() > 0)
-							{
-								throw MyException("Your instruction doesn`t have to consist <,>.");
-							}
-							base = 10;
-						}
-						
-						result_of_instr_str = from_decimal_to_base(first_operand_number, base);
-						output_data_message(first_operand_str, base, result_of_instr_str);
-						//std::cout << yellow << first_operand_str << "(" << blue << base << yellow << ")" << white << " = " << blue << result_of_instr_str << white <<std::endl;
-						break;
-
-					}
-					else
-					{
-						index_of_assign = str.find(assignment_symbol);
-						if (index_of_assign == std::string::npos)
-						{
-							continue;
-						}
-						for (int j = 0; j < index_of_assign; j++)
-						{
-							if (!isalnum(str[j]))
-							{
-								throw MyException("Variable can`t consists punctuation symbols.");
-							}
-							result_of_instr_str += str[j];
-						}
-						if (isdigit(result_of_instr_str[0]))
-						{
-							throw MyException("Variable can`t starts with a digit.");
-						}
-
-						if(!is_var_not_conflict_with_oper(result_of_instr_str))
-						{
-							throw MyException("Conflict between operation and variable names.");
-						}
-						tmp_str = str;
-						tmp_str.erase(0, index_of_assign + assignment_symbol.length());
-						regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)(\\()([\\w\\-]+)(\\,)([\\w\\-]+)(\\))";
-						if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //could be input
-						{
-							if (this->operations_list[i].first.second == ">>") //input
-							{
-								regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)(\\()([\\w]*)(\\))";
-								if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular))
-								{
-									throw MyException("Wrong instruction. Regular check error.");
-								}
-								if (result_of_reg[1] != this->operations_list[i].first.first) // IN PRINT
-								{
-									continue;
-								}
-								if (result_of_reg[3].length() != 0)
-								{
-									base_str = result_of_reg[3];
-									base = get_base_from_str(base_str);
-								}
-								else
-								{
-									base = 10;
-								}
-								found_operation = true;
-								input_str_message(result_of_instr_str, base);
-								//std::cout << yellow << "Input in " << "<" <<cyan << result_of_instr_str <<yellow <<">(" << blue << base <<yellow << "): " << white;
-								std::cin >> input_str;
-								total_result_num = from_base_to_decimal(input_str, base);
-								pair_data.first = result_of_instr_str;
-								pair_data.second = total_result_num;
-								auto it = data.find(pair_data.first);
-								if (it != data.end())
-								{
-									data[result_of_instr_str] = total_result_num;
-									break;
-								}
-								data.insert(pair_data);
-								break;
-
-							}
-							
-						}
-						if (result_of_reg[1] != this->operations_list[i].first.first) // addd
-						{
-							continue;
-						}
-						
-						found_operation = true;
-						first_operand_str = result_of_reg[3];
-						first_operand_number = get_num_from_var(first_operand_str);
-						second_operand_str = result_of_reg[5];
-						second_operand_number = get_num_from_var(second_operand_str);
-						total_result_num = this->operations_list[i].second(first_operand_number, second_operand_number);
-						pair_data.first = result_of_instr_str;
-						pair_data.second = total_result_num;
-
-						auto it = data.find(pair_data.first);
-						if (it != data.end())
-						{
-							data[result_of_instr_str] = total_result_num;
-							break;
-						}
-						data.insert(pair_data);
-						break;
-					}
+					throw MyException("Wrong instruction. Regular check error.");
 				}
-			}
-			if (!found_operation)
-			{
-				throw MyException("Operation not found.");
-			}
-		}
-		else if(this->is_op_after && !this->is_op_between)
-		{
-		/*
-		* perem = (op1, op2)op; perem=(op1, op2)op;
-		*
-		* (perem, base)output; (perem)output;
-		* perem=(base)input;  perem=()input;
-		*/
-			for (int i = 0; i < this->value_of_oper_list - 1; i++) //в последнем элементе лежит знак операции присваивания, ее не нужно искать.
-			{
-				index_of_find = str.find(this->operations_list[i].first.first);
-				if (index_of_find != std::string::npos) //найдена какая-то инструкция.
+				if (result_of_reg[1] != this->operations_list[i].first.first || (this->operations_list[i].first.second != "<<"))
 				{
-					first_operand_str.clear();
-					second_operand_str.clear();
-					result_of_instr_str.clear();
-					base_str.clear();
-					tmp_str.clear();
-					if (str[0] == '(') //output. OR ERROR.
-					{
-						regular = "([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
-						if (!std::regex_match(str.c_str(), result_of_reg, regular))
-						{
-							throw MyException("Wrong instruction. Regular check error.");
-						}
-						std::string help_str;
-						help_str = result_of_reg[3];
-						if (help_str.length() > 1)
-						{
-							throw MyException("Too many <,> in your instruction.");
-						}
-
-						if (result_of_reg[6] != this->operations_list[i].first.first || (this->operations_list[i].first.second != "<<"))//in print
-						{
-							continue;
-						}
-
-						found_operation = true;
-						first_operand_str = result_of_reg[2];
-						first_operand_number = get_num_from_var(first_operand_str);
-						//std::string help_str;
-						help_str = result_of_reg[3];
-						if (result_of_reg[4].length() != 0)
-						{
-							base_str = result_of_reg[4];
-							base = get_base_from_str(base_str);
-						}
-						else
-						{
-							if (help_str.length() > 0)
-							{
-								throw MyException("Your instruction doesn`t have to consist <,>.");
-							}
-						
-							base = 10;
-
-						}
-						result_of_instr_str = from_decimal_to_base(first_operand_number, base);
-						output_data_message(first_operand_str, base, result_of_instr_str);
-						//std::cout << yellow << first_operand_str << "(" << blue << base << yellow << ")" << white << " = " << blue << result_of_instr_str << white << std::endl;
-						break;
-					}
-					else
-					{
-						index_of_assign = str.find(assignment_symbol);
-						if (index_of_assign == std::string::npos)
-						{
-							continue;
-						}
-						for (int j = 0; j < index_of_assign; j++)
-						{
-							if (!isalnum(str[j]))
-							{
-								throw MyException("Variable can`t consists punctuation symbols.");
-							}
-							result_of_instr_str += str[j];
-						}
-						if (isdigit(result_of_instr_str[0]))
-						{
-							throw MyException("Variable can`t starts with a digit.");
-						}
-
-						if (!is_var_not_conflict_with_oper(result_of_instr_str))
-						{
-							throw MyException("Conflict between operation and variable names.");
-						}
-						tmp_str = str;
-						tmp_str.erase(0, index_of_assign + assignment_symbol.length());
-						regular = "(\\()([\\w\\-]+)(\\,)([\\w\\-]+)(\\))([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
-						if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //could be input
-						{
-							if (this->operations_list[i].first.second == ">>") //input
-							{
-								regular = "(\\()([\\w]*)(\\))([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
-								if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular))
-								{
-									throw MyException("Wrong instruction. Regular check error.");
-								}
-
-								if (result_of_reg[2].length() == 0)
-								{
-									if (result_of_reg[4] != this->operations_list[i].first.first) // in and print
-									{
-										continue;
-									}
-								}
-								else
-								{
-									if (result_of_reg[4] != this->operations_list[i].first.first) // 
-									{
-										continue;
-									}
-								}
-
-								if (result_of_reg[2].length() != 0)
-								{
-									base_str = result_of_reg[2];
-									base = get_base_from_str(base_str);
-								}
-								else
-								{
-									base = 10;
-								}
-								found_operation = true;
-								input_str_message(result_of_instr_str, base);
-								//std::cout << yellow << "Input in " << "<" << cyan << result_of_instr_str << yellow << ">(" << blue << base << yellow << "): " << white;
-								std::cin >> input_str;
-								total_result_num = from_base_to_decimal(input_str, base);
-								pair_data.first = result_of_instr_str;
-								pair_data.second = total_result_num;
-								auto it = data.find(pair_data.first);
-								if (it != data.end())
-								{
-									data[result_of_instr_str] = total_result_num;
-									break;
-								}
-								data.insert(pair_data);
-								break;
-
-							}
-						}
-						if (result_of_reg[6] != this->operations_list[i].first.first) // addd
-						{
-							continue;
-						}
-
-						found_operation = true;
-						first_operand_str = result_of_reg[2];
-						first_operand_number = get_num_from_var(first_operand_str);
-						second_operand_str = result_of_reg[4];
-						second_operand_number = get_num_from_var(second_operand_str);
-						total_result_num = this->operations_list[i].second(first_operand_number, second_operand_number);
-						pair_data.first = result_of_instr_str;
-						pair_data.second = total_result_num;
-
-						auto it = data.find(pair_data.first);
-						if (it != data.end())
-						{
-							data[result_of_instr_str] = total_result_num;
-							break;
-						}
-						data.insert(pair_data);
-						break;
-					}
+					continue;
 				}
-			}
-			if (!found_operation)
-			{
-				throw MyException("Operation not found.");
-			}
-		}
-		else if (this->is_op_before && this->is_op_between)
-		{
-		for (int i = 0; i < this->value_of_oper_list - 1; i++)
-		{
-			index_of_find = str.find(this->operations_list[i].first.first);
-			if (index_of_find != std::string::npos) //что-то нашлось
-			{
 
-				first_operand_str.clear();
-				second_operand_str.clear();
-				result_of_instr_str.clear();
-				base_str.clear();
-				tmp_str.clear();
+				found_operation = true;
+				first_operand_str = result_of_reg[3];
+				first_operand_number = get_num_from_var(first_operand_str);
+				std::string help_str;
+				help_str = result_of_reg[4];
+				if (result_of_reg[5].length() != 0)
+				{
+					if (help_str.length() > 1)
+					{
+						throw MyException("Too many <,> in your instruction.");
+					}
+					base_str = result_of_reg[5];
+					base = get_base_from_str(base_str);
+				}
+				else
+				{
+					if (help_str.length() > 0)
+					{
+						throw MyException("Your instruction doesn`t have to consist <,>.");
+					}
+					base = 10;
+				}
 
+				result_of_instr_str = from_decimal_to_base(first_operand_number, base);
+				output_data_message(first_operand_str, base, result_of_instr_str);
+				//std::cout << yellow << first_operand_str << "(" << blue << base << yellow << ")" << white << " = " << blue << result_of_instr_str << white <<std::endl;
+				break;
+
+			}
+			else
+			{
 				index_of_assign = str.find(assignment_symbol);
-				if (index_of_assign == std::string::npos) //output или error
+				if (index_of_assign == std::string::npos)
 				{
-
-					if (this->operations_list[i].first.second != "<<")  //(intmp)output;
-					{
-						continue;
-					}
-
-					regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)";
-					if (std::regex_match(str.c_str(), result_of_reg, regular)) // output(what_to_output);
-					{
-						if (result_of_reg[2] != this->operations_list[i].first.first)
-						{
-							throw MyException("Wrong output instruction. Or you have forgotten an assignment simbol.");
-						}
-
-						found_operation = true;
-						first_operand_str = result_of_reg[6];
-						first_operand_number = get_num_from_var(first_operand_str);
-						base = 10;
-
-						result_of_instr_str = from_decimal_to_base(first_operand_number, base);
-						output_data_message(first_operand_str, base, result_of_instr_str);
-						break;
-
-					}
-					//else
-					//a output b;
-					regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
-					if (std::regex_match(str.c_str(), result_of_reg, regular))
-					{
-						found_operation = true;
-						first_operand_str = result_of_reg[2];
-						first_operand_number = get_num_from_var(first_operand_str);
-
-						base_str = result_of_reg[6];
-						base = get_base_from_str(base_str);
-
-						result_of_instr_str = from_decimal_to_base(first_operand_number, base);
-						output_data_message(first_operand_str, base, result_of_instr_str);
-					}
-					else
-					{
-						throw MyException("Wrong output operation syntaxis. Please, try again. May be you have forgotten space symbols.");
-					}
+					continue;
 				}
-				else //значит, что-то нашлось с знаком равно.
+				for (int j = 0; j < index_of_assign; j++)
 				{
-					for (int j = 0; j < index_of_assign; j++)
+					if (!isalnum(str[j]))
 					{
-						if (!isspace(str[j]))
-						{
-							if (!isalnum(str[j]))
-							{
-								throw MyException("Variable can`t consists punctuation symbols.");
-							}
-							result_of_instr_str += str[j];
-						}
+						throw MyException("Variable can`t consists punctuation symbols.");
 					}
-					if (isdigit(result_of_instr_str[0]))
-					{
-						throw MyException("Variable can`t starts with a digit.");
-					}
-					if (!is_var_not_conflict_with_oper(result_of_instr_str))
-					{
-						throw MyException("Conflict between operation and variable names.");
-					}
-					tmp_str = str;
-					tmp_str.erase(0, index_of_assign + assignment_symbol.length());
-
-					regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w]*)([ ]*)([\\)])([ ]*)"; //Отловим шаблон input
-					if (std::regex_match(tmp_str.c_str(), result_of_reg, regular))
-					{
-						//если нашлось, то это наш input или ошибка.
-						if (this->operations_list[i].first.second != ">>")
-						{
-							throw MyException("Wrong input operation.");
-						}
-						if (result_of_reg[2] != this->operations_list[i].first.first)
-						{
-							continue;
-							//throw MyException("Wrong instruction. Regular check error.");
-						}
-
-
-						if (result_of_reg[6].length() != 0) //input(base)=a
-						{
-							base_str = result_of_reg[6];
-							base = get_base_from_str(base_str);
-
-						}
-						else //input() = a
-						{
-							base = 10;
-						}
-
-						found_operation = true;
-						input_str_message(result_of_instr_str, base);
-						std::cin >> input_str;
-						total_result_num = from_base_to_decimal(input_str, base);
-						pair_data.first = result_of_instr_str;
-						pair_data.second = total_result_num;
-						auto it = data.find(pair_data.first);
-						if (it != data.end())
-						{
-							data[result_of_instr_str] = total_result_num;
-							break;
-						}
-
-						data.insert(pair_data);
-						break;
-					}
-					//остальные операции (add, sub, mult и т.д.)
-					regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
-					if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //нашлась инструкция
-					{
-						throw MyException("Error syntaxis of your instruction, please, check it out and try again.");
-					}
-
-					if (result_of_reg[4] != this->operations_list[i].first.first) // addd
-					{
-						continue;
-					}
-
-					found_operation = true;
-					first_operand_str = result_of_reg[2];
-					first_operand_number = get_num_from_var(first_operand_str);
-					second_operand_str = result_of_reg[6];
-					second_operand_number = get_num_from_var(second_operand_str);
-					total_result_num = this->operations_list[i].second(first_operand_number, second_operand_number);
-					pair_data.first = result_of_instr_str;
-					pair_data.second = total_result_num;
-
-					auto it = data.find(pair_data.first);
-					if (it != data.end())
-					{
-						data[result_of_instr_str] = total_result_num;
-						break;
-					}
-					data.insert(pair_data);
-					break;
+					result_of_instr_str += str[j];
 				}
-			}
-
-		}
-		if (!found_operation)
-		{
-			throw MyException("Operation not found.");
-		}
-
-		}
-		else if (this->is_op_after && this->is_op_between)
-		{
-		for (int i = 0; i < this->value_of_oper_list - 1; i++)
-		{
-			index_of_find = str.find(this->operations_list[i].first.first);
-			if (index_of_find != std::string::npos) //что-то нашлось
-			{
-
-				first_operand_str.clear();
-				second_operand_str.clear();
-				result_of_instr_str.clear();
-				base_str.clear();
-				tmp_str.clear();
-
-				index_of_assign = str.find(assignment_symbol);
-				if (index_of_assign == std::string::npos) //output или error
+				if (isdigit(result_of_instr_str[0]))
 				{
-
-					if (this->operations_list[i].first.second != "<<")  //(intmp)output;
-					{
-						continue;
-					}
-
-					regular = "([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)";
-					if (std::regex_match(str.c_str(), result_of_reg, regular)) // output(what_to_output);
-					{
-						if (result_of_reg[8] != this->operations_list[i].first.first)
-						{
-							throw MyException("Wrong output instruction. Or you have forgotten an assignment simbol.");
-						}
-
-						found_operation = true;
-						first_operand_str = result_of_reg[4];
-						first_operand_number = get_num_from_var(first_operand_str);
-						base = 10;
-
-						result_of_instr_str = from_decimal_to_base(first_operand_number, base);
-						output_data_message(first_operand_str, base, result_of_instr_str);
-						break;
-
-					}
-					//else
-					//a output b;
-					regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
-					if (std::regex_match(str.c_str(), result_of_reg, regular))
-					{
-						found_operation = true;
-						first_operand_str = result_of_reg[2];
-						first_operand_number = get_num_from_var(first_operand_str);
-
-						base_str = result_of_reg[6];
-						base = get_base_from_str(base_str);
-
-						result_of_instr_str = from_decimal_to_base(first_operand_number, base);
-						output_data_message(first_operand_str, base, result_of_instr_str);
-					}
-					else
-					{
-						throw MyException("Wrong output operation syntaxis. Please, try again. May be you have forgotten space symbols.");
-					}
+					throw MyException("Variable can`t starts with a digit.");
 				}
-				else //значит, что-то нашлось с знаком равно.
+
+				if (!is_var_not_conflict_with_oper(result_of_instr_str))
 				{
-					for (int j = 0; j < index_of_assign; j++)
-					{
-						if (!isspace(str[j]))
-						{
-							if (!isalnum(str[j]))
-							{
-								throw MyException("Variable can`t consists punctuation symbols.");
-							}
-							result_of_instr_str += str[j];
-						}
-					}
-					if (isdigit(result_of_instr_str[0]))
-					{
-						throw MyException("Variable can`t starts with a digit.");
-					}
-					if (!is_var_not_conflict_with_oper(result_of_instr_str))
-					{
-						throw MyException("Conflict between operation and variable names.");
-					}
-					tmp_str = str;
-					tmp_str.erase(0, index_of_assign + assignment_symbol.length());
-
-					regular = "([ ]*)([\\(])([ ]*)([\\w]*)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)"; //Отловим шаблон input
-					if (std::regex_match(tmp_str.c_str(), result_of_reg, regular))
-					{
-						//если нашлось, то это наш input или ошибка.
-						if (this->operations_list[i].first.second != ">>")
-						{
-							throw MyException("Wrong input operation.");
-						}
-						if (result_of_reg[8] != this->operations_list[i].first.first)
-						{
-							continue;
-							//throw MyException("Wrong instruction. Regular check error.");
-						}
-
-
-						if (result_of_reg[4].length() != 0) //(base)input=a
-						{
-							base_str = result_of_reg[4];
-							base = get_base_from_str(base_str);
-
-						}
-						else //input() = a
-						{
-							base = 10;
-						}
-
-						found_operation = true;
-						input_str_message(result_of_instr_str, base);
-						std::cin >> input_str;
-						total_result_num = from_base_to_decimal(input_str, base);
-						pair_data.first = result_of_instr_str;
-						pair_data.second = total_result_num;
-						auto it = data.find(pair_data.first);
-						if (it != data.end())
-						{
-							data[result_of_instr_str] = total_result_num;
-							break;
-						}
-
-						data.insert(pair_data);
-						break;
-					}
-					//остальные операции (add, sub, mult и т.д.)
-					regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
-					if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //нашлась инструкция
-					{
-						throw MyException("Error syntaxis of your instruction, please, check it out and try again.");
-					}
-
-					if (result_of_reg[4] != this->operations_list[i].first.first) // addd
-					{
-						continue;
-					}
-
-					found_operation = true;
-					first_operand_str = result_of_reg[2];
-					first_operand_number = get_num_from_var(first_operand_str);
-					second_operand_str = result_of_reg[6];
-					second_operand_number = get_num_from_var(second_operand_str);
-					total_result_num = this->operations_list[i].second(first_operand_number, second_operand_number);
-					pair_data.first = result_of_instr_str;
-					pair_data.second = total_result_num;
-
-					auto it = data.find(pair_data.first);
-					if (it != data.end())
-					{
-						data[result_of_instr_str] = total_result_num;
-						break;
-					}
-					data.insert(pair_data);
-					break;
+					throw MyException("Conflict between operation and variable names.");
 				}
-			}
-
-		}
-		if (!found_operation)
-		{
-			throw MyException("Operation not found.");
-		}
-
-		}
-	}
-	else //right
-	{
-		if (this->is_op_before && !this->is_op_between)
-			/*
-			* op(op1, op2) = perem; op(op1, op2) ravno perem;
-			*
-			* output(perem, base); output(perem);
-			* input(base) = perem;  input() = perem;
-			*/
-		{
-			for (int i = 0; i < this->value_of_oper_list - 1; i++) //в последнем элементе лежит знак операции присваивания, ее не нужно искать.
-			{
-				index_of_find = str.find(this->operations_list[i].first.first);
-				if (index_of_find != std::string::npos) //найдена какая-то инструкция.
+				tmp_str = str;
+				tmp_str.erase(0, index_of_assign + assignment_symbol.length());
+				regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)(\\()([\\w\\-]+)(\\,)([\\w\\-]+)(\\))";
+				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //could be input
 				{
-					first_operand_str.clear();
-					second_operand_str.clear();
-					result_of_instr_str.clear();
-					base_str.clear();
-					tmp_str.clear();
-					if (index_of_find != 0) //tmp with name: add1 or error.
+					if (this->operations_list[i].first.second == ">>") //input
 					{
-						continue;
-					}
-
-					index_of_assign = str.find(assignment_symbol);
-					if (index_of_assign == std::string::npos) //output or Error
-					{
-						if (this->operations_list[i].first.second != "<<")  //output(intmp);
-						{
-							continue;
-						}
-
-						regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])";
-						if (!std::regex_match(str.c_str(), result_of_reg, regular))
-						{
-							throw MyException("Wrong instruction. Regular check error.");
-						}
-
-						if (result_of_reg[1] != this->operations_list[i].first.first)
-						{
-							throw MyException("Wrong instruction. Output instruction failed.");
-						}
-
-
-						found_operation = true;
-						first_operand_str = result_of_reg[3];
-						first_operand_number = get_num_from_var(first_operand_str);
-						std::string help_str;
-						help_str = result_of_reg[4];
-
-						if (help_str.length() > 1)
-						{
-							throw MyException("Too many <,> in your instruction.");
-						}
-
-						if (result_of_reg[5].length() != 0)
-						{
-							base_str = result_of_reg[5];
-							base = get_base_from_str(base_str);
-						}
-						else
-						{
-							if (help_str.length() > 0)
-							{
-								throw MyException("Your instruction doesn`t have to consist <,>.");
-							}
-							base = 10;
-						}
-
-						result_of_instr_str = from_decimal_to_base(first_operand_number, base);
-						output_data_message(first_operand_str, base, result_of_instr_str);
-						break;
-
-					}
-
-
-					if (this->operations_list[i].first.second == ">>") //input oper
-					{
-						for (int j = index_of_assign + assignment_symbol.length(); j < str.length(); j++)  //input(a) = asd2
-						{
-							if (!isalnum(str[j]))
-							{
-								throw MyException("Variable can`t consists punctuation symbols.");
-							}
-							result_of_instr_str += str[j];
-						}
-						if (isdigit(result_of_instr_str[0]))
-						{
-							throw MyException("Variable can`t starts with a digit.");
-						}
-						if (!is_var_not_conflict_with_oper(result_of_instr_str))
-						{
-							throw MyException("Conflict between operation and variable names.");
-						}
-						tmp_str = str;
-						tmp_str.erase(index_of_assign);
 						regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)(\\()([\\w]*)(\\))";
 						if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular))
 						{
 							throw MyException("Wrong instruction. Regular check error.");
 						}
-
-						if (result_of_reg[1] != this->operations_list[i].first.first)
+						if (result_of_reg[1] != this->operations_list[i].first.first) // IN PRINT
 						{
-							throw MyException("Wrong instruction. Input instruction failed.");
+							continue;
 						}
-
-
 						if (result_of_reg[3].length() != 0)
 						{
 							base_str = result_of_reg[3];
@@ -1521,6 +850,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 						}
 						found_operation = true;
 						input_str_message(result_of_instr_str, base);
+						//std::cout << yellow << "Input in " << "<" <<cyan << result_of_instr_str <<yellow <<">(" << blue << base <<yellow << "): " << white;
 						std::cin >> input_str;
 						total_result_num = from_base_to_decimal(input_str, base);
 						pair_data.first = result_of_instr_str;
@@ -1533,48 +863,181 @@ void Interpretator::parse_and_solve(const std::string& str)
 						}
 						data.insert(pair_data);
 						break;
+
 					}
-					else //others operations
+
+				}
+				if (result_of_reg[1] != this->operations_list[i].first.first) // addd
+				{
+					continue;
+				}
+
+				found_operation = true;
+				first_operand_str = result_of_reg[3];
+				first_operand_number = get_num_from_var(first_operand_str);
+				second_operand_str = result_of_reg[5];
+				second_operand_number = get_num_from_var(second_operand_str);
+				total_result_num = this->operations_list[i].second(first_operand_number, second_operand_number);
+				pair_data.first = result_of_instr_str;
+				pair_data.second = total_result_num;
+
+				auto it = data.find(pair_data.first);
+				if (it != data.end())
+				{
+					data[result_of_instr_str] = total_result_num;
+					break;
+				}
+				data.insert(pair_data);
+				break;
+			}
+		}
+	}
+	if (!found_operation)
+	{
+		throw MyException("Operation not found.");
+	}
+}
+
+void Interpretator::left_and_op_after(const std::string& str)
+{
+	std::string first_operand_str;
+	std::string second_operand_str;
+	int first_operand_number;
+	int second_operand_number;
+	std::pair<std::string, int> pair_data;
+	std::string base_str;
+	int base;
+	std::string result_of_instr_str;
+	int total_result_num;
+	int index_of_assign;
+	std::string input_str;
+	std::regex regular;
+	std::cmatch result_of_reg;
+	std::string tmp_str;
+	bool found_operation = false;
+	int index_of_find = -1;
+	for (int i = 0; i < this->value_of_oper_list - 1; i++) //в последнем элементе лежит знак операции присваивания, ее не нужно искать.
+	{
+		index_of_find = str.find(this->operations_list[i].first.first);
+		if (index_of_find != std::string::npos) //найдена какая-то инструкция.
+		{
+			first_operand_str.clear();
+			second_operand_str.clear();
+			result_of_instr_str.clear();
+			base_str.clear();
+			tmp_str.clear();
+			if (str[0] == '(') //output. OR ERROR.
+			{
+				regular = "([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
+				if (!std::regex_match(str.c_str(), result_of_reg, regular))
+				{
+					throw MyException("Wrong instruction. Regular check error.");
+				}
+				std::string help_str;
+				help_str = result_of_reg[3];
+				if (help_str.length() > 1)
+				{
+					throw MyException("Too many <,> in your instruction.");
+				}
+
+				if (result_of_reg[6] != this->operations_list[i].first.first || (this->operations_list[i].first.second != "<<"))//in print
+				{
+					continue;
+				}
+
+				found_operation = true;
+				first_operand_str = result_of_reg[2];
+				first_operand_number = get_num_from_var(first_operand_str);
+				//std::string help_str;
+				help_str = result_of_reg[3];
+				if (result_of_reg[4].length() != 0)
+				{
+					base_str = result_of_reg[4];
+					base = get_base_from_str(base_str);
+				}
+				else
+				{
+					if (help_str.length() > 0)
 					{
-						
-						for (int j = index_of_assign + assignment_symbol.length(); j < str.length(); j++)  //input(a) = asd2
-						{
-							if (!isalnum(str[j]))
-							{
-								throw MyException("Variable can`t consists punctuation symbols.");
-							}
-							result_of_instr_str += str[j];
-						}
-						if (isdigit(result_of_instr_str[0]))
-						{
-							throw MyException("Variable can`t starts with a digit.");
-						}
-						if (!is_var_not_conflict_with_oper(result_of_instr_str))
-						{
-							throw MyException("Conflict between operation and variable names.");
-						}
-						tmp_str = str;
-						tmp_str.erase(index_of_assign);
-						regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)(\\()([\\w\\-]+)(\\,)([\\w\\-]+)(\\))";
-						if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) 
+						throw MyException("Your instruction doesn`t have to consist <,>.");
+					}
+
+					base = 10;
+
+				}
+				result_of_instr_str = from_decimal_to_base(first_operand_number, base);
+				output_data_message(first_operand_str, base, result_of_instr_str);
+				//std::cout << yellow << first_operand_str << "(" << blue << base << yellow << ")" << white << " = " << blue << result_of_instr_str << white << std::endl;
+				break;
+			}
+			else
+			{
+				index_of_assign = str.find(assignment_symbol);
+				if (index_of_assign == std::string::npos)
+				{
+					continue;
+				}
+				for (int j = 0; j < index_of_assign; j++)
+				{
+					if (!isalnum(str[j]))
+					{
+						throw MyException("Variable can`t consists punctuation symbols.");
+					}
+					result_of_instr_str += str[j];
+				}
+				if (isdigit(result_of_instr_str[0]))
+				{
+					throw MyException("Variable can`t starts with a digit.");
+				}
+
+				if (!is_var_not_conflict_with_oper(result_of_instr_str))
+				{
+					throw MyException("Conflict between operation and variable names.");
+				}
+				tmp_str = str;
+				tmp_str.erase(0, index_of_assign + assignment_symbol.length());
+				regular = "(\\()([\\w\\-]+)(\\,)([\\w\\-]+)(\\))([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
+				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //could be input
+				{
+					if (this->operations_list[i].first.second == ">>") //input
+					{
+						regular = "(\\()([\\w]*)(\\))([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
+						if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular))
 						{
 							throw MyException("Wrong instruction. Regular check error.");
 						}
-						if (result_of_reg[1] != this->operations_list[i].first.first) // addd
-						{
-							continue;
-						}
-						
 
+						if (result_of_reg[2].length() == 0)
+						{
+							if (result_of_reg[4] != this->operations_list[i].first.first) // in and print
+							{
+								continue;
+							}
+						}
+						else
+						{
+							if (result_of_reg[4] != this->operations_list[i].first.first) // 
+							{
+								continue;
+							}
+						}
+
+						if (result_of_reg[2].length() != 0)
+						{
+							base_str = result_of_reg[2];
+							base = get_base_from_str(base_str);
+						}
+						else
+						{
+							base = 10;
+						}
 						found_operation = true;
-						first_operand_str = result_of_reg[3];
-						first_operand_number = get_num_from_var(first_operand_str);
-						second_operand_str = result_of_reg[5];
-						second_operand_number = get_num_from_var(second_operand_str);
-						total_result_num = this->operations_list[i].second(first_operand_number, second_operand_number);
+						input_str_message(result_of_instr_str, base);
+						//std::cout << yellow << "Input in " << "<" << cyan << result_of_instr_str << yellow << ">(" << blue << base << yellow << "): " << white;
+						std::cin >> input_str;
+						total_result_num = from_base_to_decimal(input_str, base);
 						pair_data.first = result_of_instr_str;
 						pair_data.second = total_result_num;
-
 						auto it = data.find(pair_data.first);
 						if (it != data.end())
 						{
@@ -1583,86 +1046,122 @@ void Interpretator::parse_and_solve(const std::string& str)
 						}
 						data.insert(pair_data);
 						break;
+
 					}
 				}
-			}
-			if (!found_operation)
-			{
-				throw MyException("Operation not found.");
+				if (result_of_reg[6] != this->operations_list[i].first.first) // addd
+				{
+					continue;
+				}
+
+				found_operation = true;
+				first_operand_str = result_of_reg[2];
+				first_operand_number = get_num_from_var(first_operand_str);
+				second_operand_str = result_of_reg[4];
+				second_operand_number = get_num_from_var(second_operand_str);
+				total_result_num = this->operations_list[i].second(first_operand_number, second_operand_number);
+				pair_data.first = result_of_instr_str;
+				pair_data.second = total_result_num;
+
+				auto it = data.find(pair_data.first);
+				if (it != data.end())
+				{
+					data[result_of_instr_str] = total_result_num;
+					break;
+				}
+				data.insert(pair_data);
+				break;
 			}
 		}
-		else if (this->is_op_after && !this->is_op_between)
-		/*
-			* (op1, op2)op = perem; (op1, op2)op ravno perem;
-			*
-			* (perem, base)output; (perem)output; ;
-			* (base)input = perem;  ()input = perem;
-		*/
-		{
-		for (int i = 0; i < this->value_of_oper_list - 1; i++) //в последнем элементе лежит знак операции присваивания, ее не нужно искать.
-		{
-			if (str[0] != '(')
-			{
-				throw MyException("Wrong instruction. It starts not at '('.");
-			}
-			index_of_find = str.find(this->operations_list[i].first.first);
-			if (index_of_find != std::string::npos) //что-то нашлось
-			{
-				first_operand_str.clear();
-				second_operand_str.clear();
-				result_of_instr_str.clear();
-				base_str.clear();
-				tmp_str.clear();
+	}
+	if (!found_operation)
+	{
+		throw MyException("Operation not found.");
+	}
+}
 
-				index_of_assign = str.find(assignment_symbol);
-				if (index_of_assign == std::string::npos) //output or err.
+void Interpretator::left_and_op_un_bef_between(const std::string& str)
+{
+	std::string first_operand_str;
+	std::string second_operand_str;
+	int first_operand_number;
+	int second_operand_number;
+	std::pair<std::string, int> pair_data;
+	std::string base_str;
+	int base;
+	std::string result_of_instr_str;
+	int total_result_num;
+	int index_of_assign;
+	std::string input_str;
+	std::regex regular;
+	std::cmatch result_of_reg;
+	std::string tmp_str;
+	bool found_operation = false;
+	int index_of_find = -1;
+	for (int i = 0; i < this->value_of_oper_list - 1; i++)
+	{
+		index_of_find = str.find(this->operations_list[i].first.first);
+		if (index_of_find != std::string::npos) //что-то нашлось
+		{
+
+			first_operand_str.clear();
+			second_operand_str.clear();
+			result_of_instr_str.clear();
+			base_str.clear();
+			tmp_str.clear();
+
+			index_of_assign = str.find(assignment_symbol);
+			if (index_of_assign == std::string::npos) //output или error
+			{
+
+				if (this->operations_list[i].first.second != "<<")  //(addbar)output;
 				{
-					if (this->operations_list[i].first.second != "<<")  //(intmp)output;
+					continue;
+				}
+
+				regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)";
+				if (std::regex_match(str.c_str(), result_of_reg, regular)) // output(what_to_output);
+				{
+					if (result_of_reg[2] != this->operations_list[i].first.first)
 					{
-						continue;
-					}
-					
-					regular = "([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
-					if (!std::regex_match(str.c_str(), result_of_reg, regular))
-					{
-						throw MyException("Wrong instruction. Regular check error.");
-					}
-					if (result_of_reg[6] != this->operations_list[i].first.first) //(16)output=intmp;
-					{
-						throw MyException("Wrong instruction. Output instruction error.");
+						throw MyException("Wrong output instruction. Or you have forgotten an assignment simbol.");
 					}
 
 					found_operation = true;
-					first_operand_str = result_of_reg[2];
+					first_operand_str = result_of_reg[6];
 					first_operand_number = get_num_from_var(first_operand_str);
-					std::string help_str;
-					help_str = result_of_reg[3];
-					if (help_str.length() > 1)
-					{
-						throw MyException("Too many <,> in your instruction.");
-					}
-					if (result_of_reg[4].length() != 0)
-					{
-						base_str = result_of_reg[4];
-						base = get_base_from_str(base_str);
-					}
-					else
-					{
-						if (help_str.length() > 0)
-						{
-							throw MyException("Your instruction doesn`t have to consist <,>.");
-						}
-						
-						base = 10;
-					}
+					base = 10;
 
 					result_of_instr_str = from_decimal_to_base(first_operand_number, base);
 					output_data_message(first_operand_str, base, result_of_instr_str);
 					break;
+
 				}
-				else //(add_base)input=v
+				//else
+				//a output b;
+				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
+				if (std::regex_match(str.c_str(), result_of_reg, regular))
 				{
-					for (int j = index_of_assign + assignment_symbol.length(); j < str.length(); j++)  //(a)input = asd2
+					found_operation = true;
+					first_operand_str = result_of_reg[2];
+					first_operand_number = get_num_from_var(first_operand_str);
+
+					base_str = result_of_reg[6];
+					base = get_base_from_str(base_str);
+
+					result_of_instr_str = from_decimal_to_base(first_operand_number, base);
+					output_data_message(first_operand_str, base, result_of_instr_str);
+				}
+				else
+				{
+					throw MyException("Wrong output operation syntaxis. Please, try again. May be you have forgotten space symbols.");
+				}
+			}
+			else //значит, что-то нашлось с знаком равно.
+			{
+				for (int j = 0; j < index_of_assign; j++)
+				{
+					if (!isspace(str[j]))
 					{
 						if (!isalnum(str[j]))
 						{
@@ -1670,405 +1169,641 @@ void Interpretator::parse_and_solve(const std::string& str)
 						}
 						result_of_instr_str += str[j];
 					}
-					if (isdigit(result_of_instr_str[0]))
+				}
+				if (isdigit(result_of_instr_str[0]))
+				{
+					throw MyException("Variable can`t starts with a digit.");
+				}
+				if (!is_var_not_conflict_with_oper(result_of_instr_str))
+				{
+					throw MyException("Conflict between operation and variable names.");
+				}
+				tmp_str = str;
+				tmp_str.erase(0, index_of_assign + assignment_symbol.length());
+
+				regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w]*)([ ]*)([\\)])([ ]*)"; //Отловим шаблон input
+				if (std::regex_match(tmp_str.c_str(), result_of_reg, regular))
+				{
+					//если нашлось, то это наш input или ошибка.
+					if (this->operations_list[i].first.second != ">>") //addbar= input(2);
 					{
-						throw MyException("Variable can`t starts with a digit.");
+						continue;
+						//throw MyException("Wrong input operation.");
 					}
-					if (!is_var_not_conflict_with_oper(result_of_instr_str))
+					if (result_of_reg[2] != this->operations_list[i].first.first)
 					{
-						throw MyException("Conflict between operation and variable names.");
-					}
-					tmp_str = str;
-					tmp_str.erase(index_of_assign);
-					regular = "([\\(])([\\w]*)([\\,]*)([\\w]*)([\\)])([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
-					if (!std::regex_match(tmp_str.c_str(), result_of_reg,  regular))
-					{
-						throw MyException("Wrong operation. Please, check your instruction better.");
-					}
-					std::string help_str;
-					help_str = result_of_reg[3];
-					if (help_str.length() > 1)
-					{
-						throw MyException("Too many <,> in your instruction.");
+						continue;
+						//throw MyException("Wrong instruction. Regular check error.");
 					}
 
-					if (result_of_reg[4].length() == 0) //input or error. ()input=a or (base)input=a
+
+					if (result_of_reg[6].length() != 0) //input(base)=a
 					{
-						if (this->operations_list[i].first.second != ">>")
-						{
-							throw MyException("Wrong input operation.");
-						}
-						if (result_of_reg[6] != this->operations_list[i].first.first)// TMP - ADD, ADD - OPERATION
-						{
-							continue;
-							//throw MyException("Wrong instruction. Regular check error.");
-						}
-						if (help_str.length() > 0)
-						{
-							throw MyException("Your instruction doesn`t have to consist <,>.");
-						}
+						base_str = result_of_reg[6];
+						base = get_base_from_str(base_str);
 
-						if (result_of_reg[2].length() != 0) //(base)input=a
-						{
-							base_str = result_of_reg[2];
-							base = get_base_from_str(base_str);
-							
-						}
-						else //()input = a
-						{
-							base = 10;
-						}
+					}
+					else //input() = a
+					{
+						base = 10;
+					}
 
-						found_operation = true;
-						input_str_message(result_of_instr_str, base);
-						std::cin >> input_str;
-						total_result_num = from_base_to_decimal(input_str, base);
-						pair_data.first = result_of_instr_str;
-						pair_data.second = total_result_num;
-						auto it = data.find(pair_data.first);
-						if (it != data.end())
-						{
-							data[result_of_instr_str] = total_result_num;
-							break;
-						}
-
-						data.insert(pair_data);
+					found_operation = true;
+					input_str_message(result_of_instr_str, base);
+					std::cin >> input_str;
+					total_result_num = from_base_to_decimal(input_str, base);
+					pair_data.first = result_of_instr_str;
+					pair_data.second = total_result_num;
+					auto it = data.find(pair_data.first);
+					if (it != data.end())
+					{
+						data[result_of_instr_str] = total_result_num;
 						break;
 					}
-					else //other opearations
+
+					data.insert(pair_data);
+					break;
+				}
+				//остальные операции (add, sub, mult и т.д.)
+				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
+				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //нашлась инструкция
+				{
+					throw MyException("Error syntaxis of your instruction, please, check it out and try again.");
+				}
+
+				if (result_of_reg[4] != this->operations_list[i].first.first) // addd
+				{
+					continue;
+				}
+
+				found_operation = true;
+				first_operand_str = result_of_reg[2];
+				first_operand_number = get_num_from_var(first_operand_str);
+				second_operand_str = result_of_reg[6];
+				second_operand_number = get_num_from_var(second_operand_str);
+				total_result_num = this->operations_list[i].second(first_operand_number, second_operand_number);
+				pair_data.first = result_of_instr_str;
+				pair_data.second = total_result_num;
+
+				auto it = data.find(pair_data.first);
+				if (it != data.end())
+				{
+					data[result_of_instr_str] = total_result_num;
+					break;
+				}
+				data.insert(pair_data);
+				break;
+			}
+		}
+	}
+	if (!found_operation)
+	{
+		throw MyException("Operation not found.");
+	}
+}
+
+void Interpretator::left_and_op_un_aft_between(const std::string& str)
+{
+	std::string first_operand_str;
+	std::string second_operand_str;
+	int first_operand_number;
+	int second_operand_number;
+	std::pair<std::string, int> pair_data;
+	std::string base_str;
+	int base;
+	std::string result_of_instr_str;
+	int total_result_num;
+	int index_of_assign;
+	std::string input_str;
+	std::regex regular;
+	std::cmatch result_of_reg;
+	std::string tmp_str;
+	bool found_operation = false;
+	int index_of_find = -1;
+
+	for (int i = 0; i < this->value_of_oper_list - 1; i++)
+	{
+		index_of_find = str.find(this->operations_list[i].first.first);
+		if (index_of_find != std::string::npos) //что-то нашлось
+		{
+
+			first_operand_str.clear();
+			second_operand_str.clear();
+			result_of_instr_str.clear();
+			base_str.clear();
+			tmp_str.clear();
+
+			index_of_assign = str.find(assignment_symbol);
+			if (index_of_assign == std::string::npos) //output или error
+			{
+
+				if (this->operations_list[i].first.second != "<<")  //(addbar)output;
+				{
+					continue;
+				}
+
+				regular = "([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)";
+				if (std::regex_match(str.c_str(), result_of_reg, regular)) // output(what_to_output);
+				{
+					if (result_of_reg[8] != this->operations_list[i].first.first)
 					{
-						if (result_of_reg[6] != this->operations_list[i].first.first) // addd
-						{
-							continue;
-						}
-
-						found_operation = true;
-						first_operand_str = result_of_reg[2];
-						first_operand_number = get_num_from_var(first_operand_str);
-						second_operand_str = result_of_reg[4];
-						second_operand_number = get_num_from_var(second_operand_str);
-						total_result_num = this->operations_list[i].second(first_operand_number, second_operand_number);
-						pair_data.first = result_of_instr_str;
-						pair_data.second = total_result_num;
-
-						auto it = data.find(pair_data.first);
-						if (it != data.end())
-						{
-							data[result_of_instr_str] = total_result_num;
-							break;
-						}
-						data.insert(pair_data);
-						break;
+						throw MyException("Wrong output instruction. Or you have forgotten an assignment simbol.");
 					}
+
+					found_operation = true;
+					first_operand_str = result_of_reg[4];
+					first_operand_number = get_num_from_var(first_operand_str);
+					base = 10;
+
+					result_of_instr_str = from_decimal_to_base(first_operand_number, base);
+					output_data_message(first_operand_str, base, result_of_instr_str);
+					break;
+
+				}
+				//else
+				//a output b;
+				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
+				if (std::regex_match(str.c_str(), result_of_reg, regular))
+				{
+					found_operation = true;
+					first_operand_str = result_of_reg[2];
+					first_operand_number = get_num_from_var(first_operand_str);
+
+					base_str = result_of_reg[6];
+					base = get_base_from_str(base_str);
+
+					result_of_instr_str = from_decimal_to_base(first_operand_number, base);
+					output_data_message(first_operand_str, base, result_of_instr_str);
+				}
+				else
+				{
+					throw MyException("Wrong output operation syntaxis. Please, try again. May be you have forgotten space symbols.");
 				}
 			}
-		}
-		if (!found_operation)
-		{
-			throw MyException("Operation not found.");
-		}
-		}
-		else if (this->is_op_before && this->is_op_between)
-		{
-			for (int i = 0; i < this->value_of_oper_list - 1; i++)
+			else //значит, что-то нашлось с знаком равно.
 			{
-				index_of_find = str.find(this->operations_list[i].first.first);
-				if (index_of_find != std::string::npos) //что-то нашлось
+				for (int j = 0; j < index_of_assign; j++)
 				{
-
-					first_operand_str.clear();
-					second_operand_str.clear();
-					result_of_instr_str.clear();
-					base_str.clear();
-					tmp_str.clear();
-
-					index_of_assign = str.find(assignment_symbol);
-					if (index_of_assign == std::string::npos) //output или error
+					if (!isspace(str[j]))
 					{
-
-						if (this->operations_list[i].first.second != "<<")  //(intmp)output;
+						if (!isalnum(str[j]))
 						{
-							continue;
+							throw MyException("Variable can`t consists punctuation symbols.");
 						}
-						
-						regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)";
-						if (std::regex_match(str.c_str(), result_of_reg, regular)) // output(what_to_output);
-						{
-							if (result_of_reg[2] != this->operations_list[i].first.first)
-							{
-								throw MyException("Wrong output instruction. Or you have forgotten an assignment simbol.");
-							}
-
-							found_operation = true;
-							first_operand_str = result_of_reg[6];
-							first_operand_number = get_num_from_var(first_operand_str);
-							base = 10;
-
-							result_of_instr_str = from_decimal_to_base(first_operand_number, base);
-							output_data_message(first_operand_str, base, result_of_instr_str);
-							break;
-
-						}
-						//else
-						//a output b;
-						regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
-						if (std::regex_match(str.c_str(), result_of_reg, regular))
-						{
-							found_operation = true;
-							first_operand_str = result_of_reg[2];
-							first_operand_number = get_num_from_var(first_operand_str);
-
-							base_str = result_of_reg[6];
-							base = get_base_from_str(base_str);
-
-							result_of_instr_str = from_decimal_to_base(first_operand_number, base);
-							output_data_message(first_operand_str, base, result_of_instr_str);
-						}
-						else
-						{
-							throw MyException("Wrong output operation syntaxis. Please, try again. May be you have forgotten space symbols.");
-						}
-					}
-					else //значит, что-то нашлось с знаком равно.
-					{
-						for (int j = index_of_assign + assignment_symbol.length(); j < str.length(); j++)  //(a)input = asd2
-						{
-							if (!isspace(str[j]))
-							{
-								if (!isalnum(str[j]))
-								{
-									throw MyException("Variable can`t consists punctuation symbols.");
-								}
-								result_of_instr_str += str[j];
-							}
-						}
-						if (isdigit(result_of_instr_str[0]))
-						{
-							throw MyException("Variable can`t starts with a digit.");
-						}
-						if (!is_var_not_conflict_with_oper(result_of_instr_str))
-						{
-							throw MyException("Conflict between operation and variable names.");
-						}
-						tmp_str = str;
-						tmp_str.erase(index_of_assign);
-
-						regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w]*)([ ]*)([\\)])([ ]*)"; //Отловим шаблон input
-						if (std::regex_match(tmp_str.c_str(), result_of_reg, regular))
-						{
-							//если нашлось, то это наш input или ошибка.
-							if (this->operations_list[i].first.second != ">>")
-							{
-								throw MyException("Wrong input operation.");
-							}
-							if (result_of_reg[2] != this->operations_list[i].first.first)
-							{
-								continue;
-								//throw MyException("Wrong instruction. Regular check error.");
-							}
-
-
-							if (result_of_reg[6].length() != 0) //input(base)=a
-							{
-								base_str = result_of_reg[6];
-								base = get_base_from_str(base_str);
-
-							}
-							else //input() = a
-							{
-								base = 10;
-							}
-
-							found_operation = true;
-							input_str_message(result_of_instr_str, base);
-							std::cin >> input_str;
-							total_result_num = from_base_to_decimal(input_str, base);
-							pair_data.first = result_of_instr_str;
-							pair_data.second = total_result_num;
-							auto it = data.find(pair_data.first);
-							if (it != data.end())
-							{
-								data[result_of_instr_str] = total_result_num;
-								break;
-							}
-
-							data.insert(pair_data);
-							break;
-						}
-						//остальные операции (add, sub, mult и т.д.)
-						regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
-						if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //нашлась инструкция
-						{
-							throw MyException("Error syntaxis of your instruction, please, check it out and try again.");
-						}
-						
-						if (result_of_reg[4] != this->operations_list[i].first.first) // addd
-						{
-							continue;
-						}
-
-						found_operation = true;
-						first_operand_str = result_of_reg[2];
-						first_operand_number = get_num_from_var(first_operand_str);
-						second_operand_str = result_of_reg[6];
-						second_operand_number = get_num_from_var(second_operand_str);
-						total_result_num = this->operations_list[i].second(first_operand_number, second_operand_number);
-						pair_data.first = result_of_instr_str;
-						pair_data.second = total_result_num;
-
-						auto it = data.find(pair_data.first);
-						if (it != data.end())
-						{
-							data[result_of_instr_str] = total_result_num;
-							break;
-						}
-						data.insert(pair_data);
-						break;
+						result_of_instr_str += str[j];
 					}
 				}
-			
-			}
-			if (!found_operation)
-			{
-				throw MyException("Operation not found.");
-			}
-			
-		}
-		else if (this->is_op_after && this->is_op_between)
-		{
-		for (int i = 0; i < this->value_of_oper_list - 1; i++)
-		{
-			index_of_find = str.find(this->operations_list[i].first.first);
-			if (index_of_find != std::string::npos) //что-то нашлось
-			{
-
-				first_operand_str.clear();
-				second_operand_str.clear();
-				result_of_instr_str.clear();
-				base_str.clear();
-				tmp_str.clear();
-
-				index_of_assign = str.find(assignment_symbol);
-				if (index_of_assign == std::string::npos) //output или error
+				if (isdigit(result_of_instr_str[0]))
 				{
+					throw MyException("Variable can`t starts with a digit.");
+				}
+				if (!is_var_not_conflict_with_oper(result_of_instr_str))
+				{
+					throw MyException("Conflict between operation and variable names.");
+				}
+				tmp_str = str;
+				tmp_str.erase(0, index_of_assign + assignment_symbol.length());
 
-					if (this->operations_list[i].first.second != "<<")  //(intmp)output;
+				regular = "([ ]*)([\\(])([ ]*)([\\w]*)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)"; //Отловим шаблон input
+				if (std::regex_match(tmp_str.c_str(), result_of_reg, regular))
+				{
+					//если нашлось, то это наш input или ошибка.
+					if (this->operations_list[i].first.second != ">>")
+					{
+						continue;
+					}
+					if (result_of_reg[8] != this->operations_list[i].first.first)
 					{
 						continue;
 					}
 
-					regular = "([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)";
-					if (std::regex_match(str.c_str(), result_of_reg, regular)) // output(what_to_output);
+
+					if (result_of_reg[4].length() != 0) //(base)input=a
 					{
-						if (result_of_reg[8] != this->operations_list[i].first.first)
-						{
-							throw MyException("Wrong output instruction. Or you have forgotten an assignment simbol.");
-						}
-
-						found_operation = true;
-						first_operand_str = result_of_reg[4];
-						first_operand_number = get_num_from_var(first_operand_str);
-						base = 10;
-
-						result_of_instr_str = from_decimal_to_base(first_operand_number, base);
-						output_data_message(first_operand_str, base, result_of_instr_str);
-						break;
-
-					}
-					//else
-					//a output b;
-					regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
-					if (std::regex_match(str.c_str(), result_of_reg, regular))
-					{
-						found_operation = true;
-						first_operand_str = result_of_reg[2];
-						first_operand_number = get_num_from_var(first_operand_str);
-
-						base_str = result_of_reg[6];
+						base_str = result_of_reg[4];
 						base = get_base_from_str(base_str);
 
-						result_of_instr_str = from_decimal_to_base(first_operand_number, base);
-						output_data_message(first_operand_str, base, result_of_instr_str);
 					}
-					else
+					else //input() = a
 					{
-						throw MyException("Wrong output operation syntaxis. Please, try again. May be you have forgotten space symbols.");
+						base = 10;
 					}
-				}
-				else //значит, что-то нашлось с знаком равно.
-				{
-					for (int j = index_of_assign + assignment_symbol.length(); j < str.length(); j++)  //(a)input = asd2
+
+					found_operation = true;
+					input_str_message(result_of_instr_str, base);
+					std::cin >> input_str;
+					total_result_num = from_base_to_decimal(input_str, base);
+					pair_data.first = result_of_instr_str;
+					pair_data.second = total_result_num;
+					auto it = data.find(pair_data.first);
+					if (it != data.end())
 					{
-						if (!isspace(str[j]))
-						{
-							if (!isalnum(str[j]))
-							{
-								throw MyException("Variable can`t consists punctuation symbols.");
-							}
-							result_of_instr_str += str[j];
-						}
-					}
-					if (isdigit(result_of_instr_str[0]))
-					{
-						throw MyException("Variable can`t starts with a digit.");
-					}
-					if (!is_var_not_conflict_with_oper(result_of_instr_str))
-					{
-						throw MyException("Conflict between operation and variable names.");
-					}
-					tmp_str = str;
-					tmp_str.erase(index_of_assign);
-
-					regular = "([ ]*)([\\(])([ ]*)([\\w]*)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)"; //Отловим шаблон input
-					if (std::regex_match(tmp_str.c_str(), result_of_reg, regular))
-					{
-						//если нашлось, то это наш input или ошибка.
-						if (this->operations_list[i].first.second != ">>")
-						{
-							throw MyException("Wrong input operation.");
-						}
-						if (result_of_reg[8] != this->operations_list[i].first.first)
-						{
-							continue;
-							//throw MyException("Wrong instruction. Regular check error.");
-						}
-
-
-						if (result_of_reg[4].length() != 0) //(base)input=a
-						{
-							base_str = result_of_reg[4];
-							base = get_base_from_str(base_str);
-
-						}
-						else //input() = a
-						{
-							base = 10;
-						}
-
-						found_operation = true;
-						input_str_message(result_of_instr_str, base);
-						std::cin >> input_str;
-						total_result_num = from_base_to_decimal(input_str, base);
-						pair_data.first = result_of_instr_str;
-						pair_data.second = total_result_num;
-						auto it = data.find(pair_data.first);
-						if (it != data.end())
-						{
-							data[result_of_instr_str] = total_result_num;
-							break;
-						}
-
-						data.insert(pair_data);
+						data[result_of_instr_str] = total_result_num;
 						break;
 					}
-					//остальные операции (add, sub, mult и т.д.)
-					regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
-					if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //нашлась инструкция
+
+					data.insert(pair_data);
+					break;
+				}
+				//остальные операции (add, sub, mult и т.д.)
+				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
+				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //нашлась инструкция
+				{
+					throw MyException("Error syntaxis of your instruction, please, check it out and try again.");
+				}
+
+				if (result_of_reg[4] != this->operations_list[i].first.first) // addd
+				{
+					continue;
+				}
+
+				found_operation = true;
+				first_operand_str = result_of_reg[2];
+				first_operand_number = get_num_from_var(first_operand_str);
+				second_operand_str = result_of_reg[6];
+				second_operand_number = get_num_from_var(second_operand_str);
+				total_result_num = this->operations_list[i].second(first_operand_number, second_operand_number);
+				pair_data.first = result_of_instr_str;
+				pair_data.second = total_result_num;
+
+				auto it = data.find(pair_data.first);
+				if (it != data.end())
+				{
+					data[result_of_instr_str] = total_result_num;
+					break;
+				}
+				data.insert(pair_data);
+				break;
+			}
+		}
+
+	}
+	if (!found_operation)
+	{
+		throw MyException("Operation not found.");
+	}
+}
+
+void Interpretator::right_and_op_before(const std::string& str)
+{
+	std::string first_operand_str;
+	std::string second_operand_str;
+	int first_operand_number;
+	int second_operand_number;
+	std::pair<std::string, int> pair_data;
+	std::string base_str;
+	int base;
+	std::string result_of_instr_str;
+	int total_result_num;
+	int index_of_assign;
+	std::string input_str;
+	std::regex regular;
+	std::cmatch result_of_reg;
+	std::string tmp_str;
+	bool found_operation = false;
+	int index_of_find = -1;
+
+	for (int i = 0; i < this->value_of_oper_list - 1; i++) //в последнем элементе лежит знак операции присваивания, ее не нужно искать.
+	{
+		index_of_find = str.find(this->operations_list[i].first.first);
+		if (index_of_find != std::string::npos) //найдена какая-то инструкция.
+		{
+			first_operand_str.clear();
+			second_operand_str.clear();
+			result_of_instr_str.clear();
+			base_str.clear();
+			tmp_str.clear();
+			if (index_of_find != 0) //tmp with name: add1 or error.
+			{
+				continue;
+			}
+
+			index_of_assign = str.find(assignment_symbol);
+			if (index_of_assign == std::string::npos) //output or Error
+			{
+				if (this->operations_list[i].first.second != "<<")  //output(intmp);
+				{
+					continue;
+				}
+
+				regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])";
+				if (!std::regex_match(str.c_str(), result_of_reg, regular))
+				{
+					throw MyException("Wrong instruction. Regular check error.");
+				}
+
+				if (result_of_reg[1] != this->operations_list[i].first.first)
+				{
+					throw MyException("Wrong instruction. Output instruction failed.");
+				}
+
+
+				found_operation = true;
+				first_operand_str = result_of_reg[3];
+				first_operand_number = get_num_from_var(first_operand_str);
+				std::string help_str;
+				help_str = result_of_reg[4];
+
+				if (help_str.length() > 1)
+				{
+					throw MyException("Too many <,> in your instruction.");
+				}
+
+				if (result_of_reg[5].length() != 0)
+				{
+					base_str = result_of_reg[5];
+					base = get_base_from_str(base_str);
+				}
+				else
+				{
+					if (help_str.length() > 0)
 					{
-						throw MyException("Error syntaxis of your instruction, please, check it out and try again.");
+						throw MyException("Your instruction doesn`t have to consist <,>.");
+					}
+					base = 10;
+				}
+
+				result_of_instr_str = from_decimal_to_base(first_operand_number, base);
+				output_data_message(first_operand_str, base, result_of_instr_str);
+				break;
+
+			}
+
+
+			if (this->operations_list[i].first.second == ">>") //input oper
+			{
+				for (int j = index_of_assign + assignment_symbol.length(); j < str.length(); j++)  //input(a) = asd2
+				{
+					if (!isalnum(str[j]))
+					{
+						throw MyException("Variable can`t consists punctuation symbols.");
+					}
+					result_of_instr_str += str[j];
+				}
+				if (isdigit(result_of_instr_str[0]))
+				{
+					throw MyException("Variable can`t starts with a digit.");
+				}
+				if (!is_var_not_conflict_with_oper(result_of_instr_str))
+				{
+					throw MyException("Conflict between operation and variable names.");
+				}
+				tmp_str = str;
+				tmp_str.erase(index_of_assign);
+				regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)(\\()([\\w]*)(\\))";
+				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular))
+				{
+					throw MyException("Wrong instruction. Regular check error.");
+				}
+
+				if (result_of_reg[1] != this->operations_list[i].first.first) //(addbar)input
+				{
+					continue;
+					//throw MyException("Wrong instruction. Input instruction failed.");
+				}
+
+
+				if (result_of_reg[3].length() != 0)
+				{
+					base_str = result_of_reg[3];
+					base = get_base_from_str(base_str);
+				}
+				else
+				{
+					base = 10;
+				}
+				found_operation = true;
+				input_str_message(result_of_instr_str, base);
+				std::cin >> input_str;
+				total_result_num = from_base_to_decimal(input_str, base);
+				pair_data.first = result_of_instr_str;
+				pair_data.second = total_result_num;
+				auto it = data.find(pair_data.first);
+				if (it != data.end())
+				{
+					data[result_of_instr_str] = total_result_num;
+					break;
+				}
+				data.insert(pair_data);
+				break;
+			}
+			else //others operations
+			{
+
+				for (int j = index_of_assign + assignment_symbol.length(); j < str.length(); j++)  //input(a) = asd2
+				{
+					if (!isalnum(str[j]))
+					{
+						throw MyException("Variable can`t consists punctuation symbols.");
+					}
+					result_of_instr_str += str[j];
+				}
+				if (isdigit(result_of_instr_str[0]))
+				{
+					throw MyException("Variable can`t starts with a digit.");
+				}
+				if (!is_var_not_conflict_with_oper(result_of_instr_str))
+				{
+					throw MyException("Conflict between operation and variable names.");
+				}
+				tmp_str = str;
+				tmp_str.erase(index_of_assign);
+				regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)(\\()([\\w\\-]+)(\\,)([\\w\\-]+)(\\))";
+				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular))
+				{
+					throw MyException("Wrong instruction. Regular check error.");
+				}
+				if (result_of_reg[1] != this->operations_list[i].first.first) // addd
+				{
+					continue;
+				}
+
+
+				found_operation = true;
+				first_operand_str = result_of_reg[3];
+				first_operand_number = get_num_from_var(first_operand_str);
+				second_operand_str = result_of_reg[5];
+				second_operand_number = get_num_from_var(second_operand_str);
+				total_result_num = this->operations_list[i].second(first_operand_number, second_operand_number);
+				pair_data.first = result_of_instr_str;
+				pair_data.second = total_result_num;
+
+				auto it = data.find(pair_data.first);
+				if (it != data.end())
+				{
+					data[result_of_instr_str] = total_result_num;
+					break;
+				}
+				data.insert(pair_data);
+				break;
+			}
+		}
+	}
+	if (!found_operation)
+	{
+		throw MyException("Operation not found.");
+	}
+}
+
+void Interpretator::right_and_op_after(const std::string& str)
+{
+	std::string first_operand_str;
+	std::string second_operand_str;
+	int first_operand_number;
+	int second_operand_number;
+	std::pair<std::string, int> pair_data;
+	std::string base_str;
+	int base;
+	std::string result_of_instr_str;
+	int total_result_num;
+	int index_of_assign;
+	std::string input_str;
+	std::regex regular;
+	std::cmatch result_of_reg;
+	std::string tmp_str;
+	bool found_operation = false;
+	int index_of_find = -1;
+
+	for (int i = 0; i < this->value_of_oper_list - 1; i++) //в последнем элементе лежит знак операции присваивания, ее не нужно искать.
+	{
+		if (str[0] != '(')
+		{
+			throw MyException("Wrong instruction. It starts not at '('.");
+		}
+		index_of_find = str.find(this->operations_list[i].first.first);
+		if (index_of_find != std::string::npos) //что-то нашлось
+		{
+			first_operand_str.clear();
+			second_operand_str.clear();
+			result_of_instr_str.clear();
+			base_str.clear();
+			tmp_str.clear();
+
+			index_of_assign = str.find(assignment_symbol);
+			if (index_of_assign == std::string::npos) //output or err.
+			{
+				if (this->operations_list[i].first.second != "<<")  //(intmp)output;
+				{
+					continue;
+				}
+
+				regular = "([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
+				if (!std::regex_match(str.c_str(), result_of_reg, regular))
+				{
+					throw MyException("Wrong instruction. Regular check error.");
+				}
+				if (result_of_reg[6] != this->operations_list[i].first.first) //(16)output=intmp;
+				{
+					throw MyException("Wrong instruction. Output instruction error.");
+				}
+
+				found_operation = true;
+				first_operand_str = result_of_reg[2];
+				first_operand_number = get_num_from_var(first_operand_str);
+				std::string help_str;
+				help_str = result_of_reg[3];
+				if (help_str.length() > 1)
+				{
+					throw MyException("Too many <,> in your instruction.");
+				}
+				if (result_of_reg[4].length() != 0)
+				{
+					base_str = result_of_reg[4];
+					base = get_base_from_str(base_str);
+				}
+				else
+				{
+					if (help_str.length() > 0)
+					{
+						throw MyException("Your instruction doesn`t have to consist <,>.");
 					}
 
-					if (result_of_reg[4] != this->operations_list[i].first.first) // addd
+					base = 10;
+				}
+
+				result_of_instr_str = from_decimal_to_base(first_operand_number, base);
+				output_data_message(first_operand_str, base, result_of_instr_str);
+				break;
+			}
+			else //(add_base)input=v
+			{
+				for (int j = index_of_assign + assignment_symbol.length(); j < str.length(); j++)  //(a)input = asd2
+				{
+					if (!isalnum(str[j]))
+					{
+						throw MyException("Variable can`t consists punctuation symbols.");
+					}
+					result_of_instr_str += str[j];
+				}
+				if (isdigit(result_of_instr_str[0]))
+				{
+					throw MyException("Variable can`t starts with a digit.");
+				}
+				if (!is_var_not_conflict_with_oper(result_of_instr_str))
+				{
+					throw MyException("Conflict between operation and variable names.");
+				}
+				tmp_str = str;
+				tmp_str.erase(index_of_assign);
+				regular = "([\\(])([\\w]*)([\\,]*)([\\w]*)([\\)])([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
+				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular))
+				{
+					throw MyException("Wrong operation. Please, check your instruction better.");
+				}
+				std::string help_str;
+				help_str = result_of_reg[3];
+				if (help_str.length() > 1)
+				{
+					throw MyException("Too many <,> in your instruction.");
+				}
+
+				if (result_of_reg[4].length() == 0) //input or error. ()input=a or (base)input=a
+				{
+					if (this->operations_list[i].first.second != ">>")
+					{ //(2)input=addbar
+						continue;
+						//throw MyException("Wrong input operation.");
+					}
+					if (result_of_reg[6] != this->operations_list[i].first.first)// TMP - ADD, ADD - OPERATION
+					{
+						continue;
+						//throw MyException("Wrong instruction. Regular check error.");
+					}
+					if (help_str.length() > 0)
+					{
+						throw MyException("Your instruction doesn`t have to consist <,>.");
+					}
+
+					if (result_of_reg[2].length() != 0) //(base)input=a
+					{
+						base_str = result_of_reg[2];
+						base = get_base_from_str(base_str);
+
+					}
+					else //()input = a
+					{
+						base = 10;
+					}
+
+					found_operation = true;
+					input_str_message(result_of_instr_str, base);
+					std::cin >> input_str;
+					total_result_num = from_base_to_decimal(input_str, base);
+					pair_data.first = result_of_instr_str;
+					pair_data.second = total_result_num;
+					auto it = data.find(pair_data.first);
+					if (it != data.end())
+					{
+						data[result_of_instr_str] = total_result_num;
+						break;
+					}
+
+					data.insert(pair_data);
+					break;
+				}
+				else //other opearations
+				{
+					if (result_of_reg[6] != this->operations_list[i].first.first) // addd
 					{
 						continue;
 					}
@@ -2076,7 +1811,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 					found_operation = true;
 					first_operand_str = result_of_reg[2];
 					first_operand_number = get_num_from_var(first_operand_str);
-					second_operand_str = result_of_reg[6];
+					second_operand_str = result_of_reg[4];
 					second_operand_number = get_num_from_var(second_operand_str);
 					total_result_num = this->operations_list[i].second(first_operand_number, second_operand_number);
 					pair_data.first = result_of_instr_str;
@@ -2092,12 +1827,466 @@ void Interpretator::parse_and_solve(const std::string& str)
 					break;
 				}
 			}
+		}
+	}
+	if (!found_operation)
+	{
+		throw MyException("Operation not found.");
+	}
+}
 
-		}
-		if (!found_operation)
+void Interpretator::right_and_op_un_bef_between(const std::string& str)
+{
+	std::string first_operand_str;
+	std::string second_operand_str;
+	int first_operand_number;
+	int second_operand_number;
+	std::pair<std::string, int> pair_data;
+	std::string base_str;
+	int base;
+	std::string result_of_instr_str;
+	int total_result_num;
+	int index_of_assign;
+	std::string input_str;
+	std::regex regular;
+	std::cmatch result_of_reg;
+	std::string tmp_str;
+	bool found_operation = false;
+	int index_of_find = -1;
+
+	for (int i = 0; i < this->value_of_oper_list - 1; i++)
+	{
+		index_of_find = str.find(this->operations_list[i].first.first);
+		if (index_of_find != std::string::npos) //что-то нашлось
 		{
-			throw MyException("Operation not found.");
+
+			first_operand_str.clear();
+			second_operand_str.clear();
+			result_of_instr_str.clear();
+			base_str.clear();
+			tmp_str.clear();
+
+			index_of_assign = str.find(assignment_symbol);
+			if (index_of_assign == std::string::npos) //output или error
+			{
+
+				if (this->operations_list[i].first.second != "<<")  //(intmp)output;
+				{
+					continue;
+				}
+
+				regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)";
+				if (std::regex_match(str.c_str(), result_of_reg, regular)) // output(what_to_output);
+				{
+					if (result_of_reg[2] != this->operations_list[i].first.first)
+					{
+						throw MyException("Wrong output instruction. Or you have forgotten an assignment simbol.");
+					}
+
+					found_operation = true;
+					first_operand_str = result_of_reg[6];
+					first_operand_number = get_num_from_var(first_operand_str);
+					base = 10;
+
+					result_of_instr_str = from_decimal_to_base(first_operand_number, base);
+					output_data_message(first_operand_str, base, result_of_instr_str);
+					break;
+
+				}
+				//else
+				//a output b;
+				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
+				if (std::regex_match(str.c_str(), result_of_reg, regular))
+				{
+					found_operation = true;
+					first_operand_str = result_of_reg[2];
+					first_operand_number = get_num_from_var(first_operand_str);
+
+					base_str = result_of_reg[6];
+					base = get_base_from_str(base_str);
+
+					result_of_instr_str = from_decimal_to_base(first_operand_number, base);
+					output_data_message(first_operand_str, base, result_of_instr_str);
+				}
+				else
+				{
+					throw MyException("Wrong output operation syntaxis. Please, try again. May be you have forgotten space symbols.");
+				}
+			}
+			else //значит, что-то нашлось с знаком равно.
+			{
+				for (int j = index_of_assign + assignment_symbol.length(); j < str.length(); j++)  //(a)input = asd2
+				{
+					if (!isspace(str[j]))
+					{
+						if (!isalnum(str[j]))
+						{
+							throw MyException("Variable can`t consists punctuation symbols.");
+						}
+						result_of_instr_str += str[j];
+					}
+				}
+				if (isdigit(result_of_instr_str[0]))
+				{
+					throw MyException("Variable can`t starts with a digit.");
+				}
+				if (!is_var_not_conflict_with_oper(result_of_instr_str))
+				{
+					throw MyException("Conflict between operation and variable names.");
+				}
+				tmp_str = str;
+				tmp_str.erase(index_of_assign);
+
+				regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w]*)([ ]*)([\\)])([ ]*)"; //Отловим шаблон input
+				if (std::regex_match(tmp_str.c_str(), result_of_reg, regular))
+				{
+					//если нашлось, то это наш input или ошибка.
+					if (this->operations_list[i].first.second != ">>") //input(2) = addbar;
+					{
+						continue;
+						//throw MyException("Wrong input operation.");
+					}
+					if (result_of_reg[2] != this->operations_list[i].first.first)
+					{
+						continue;
+						//throw MyException("Wrong instruction. Regular check error.");
+					}
+
+
+					if (result_of_reg[6].length() != 0) //input(base)=a
+					{
+						base_str = result_of_reg[6];
+						base = get_base_from_str(base_str);
+
+					}
+					else //input() = a
+					{
+						base = 10;
+					}
+
+					found_operation = true;
+					input_str_message(result_of_instr_str, base);
+					std::cin >> input_str;
+					total_result_num = from_base_to_decimal(input_str, base);
+					pair_data.first = result_of_instr_str;
+					pair_data.second = total_result_num;
+					auto it = data.find(pair_data.first);
+					if (it != data.end())
+					{
+						data[result_of_instr_str] = total_result_num;
+						break;
+					}
+
+					data.insert(pair_data);
+					break;
+				}
+				//остальные операции (add, sub, mult и т.д.)
+				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
+				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //нашлась инструкция
+				{
+					throw MyException("Error syntaxis of your instruction, please, check it out and try again.");
+				}
+
+				if (result_of_reg[4] != this->operations_list[i].first.first) // addd
+				{
+					continue;
+				}
+
+				found_operation = true;
+				first_operand_str = result_of_reg[2];
+				first_operand_number = get_num_from_var(first_operand_str);
+				second_operand_str = result_of_reg[6];
+				second_operand_number = get_num_from_var(second_operand_str);
+				total_result_num = this->operations_list[i].second(first_operand_number, second_operand_number);
+				pair_data.first = result_of_instr_str;
+				pair_data.second = total_result_num;
+
+				auto it = data.find(pair_data.first);
+				if (it != data.end())
+				{
+					data[result_of_instr_str] = total_result_num;
+					break;
+				}
+				data.insert(pair_data);
+				break;
+			}
 		}
+
+	}
+	if (!found_operation)
+	{
+		throw MyException("Operation not found.");
+	}
+}
+
+void Interpretator::right_and_op_un_aft_between(const std::string& str)
+{
+	std::string first_operand_str;
+	std::string second_operand_str;
+	int first_operand_number;
+	int second_operand_number;
+	std::pair<std::string, int> pair_data;
+	std::string base_str;
+	int base;
+	std::string result_of_instr_str;
+	int total_result_num;
+	int index_of_assign;
+	std::string input_str;
+	std::regex regular;
+	std::cmatch result_of_reg;
+	std::string tmp_str;
+	bool found_operation = false;
+	int index_of_find = -1;
+
+	for (int i = 0; i < this->value_of_oper_list - 1; i++)
+	{
+		index_of_find = str.find(this->operations_list[i].first.first);
+		if (index_of_find != std::string::npos) //что-то нашлось
+		{
+
+			first_operand_str.clear();
+			second_operand_str.clear();
+			result_of_instr_str.clear();
+			base_str.clear();
+			tmp_str.clear();
+
+			index_of_assign = str.find(assignment_symbol);
+			if (index_of_assign == std::string::npos) //output или error
+			{
+
+				if (this->operations_list[i].first.second != "<<")  //(intmp)output;
+				{
+					continue;
+				}
+
+				regular = "([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)";
+				if (std::regex_match(str.c_str(), result_of_reg, regular)) // output(what_to_output);
+				{
+					if (result_of_reg[8] != this->operations_list[i].first.first)
+					{
+						throw MyException("Wrong output instruction. Or you have forgotten an assignment simbol.");
+					}
+
+					found_operation = true;
+					first_operand_str = result_of_reg[4];
+					first_operand_number = get_num_from_var(first_operand_str);
+					base = 10;
+
+					result_of_instr_str = from_decimal_to_base(first_operand_number, base);
+					output_data_message(first_operand_str, base, result_of_instr_str);
+					break;
+
+				}
+				//else
+				//a output b;
+				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
+				if (std::regex_match(str.c_str(), result_of_reg, regular))
+				{
+					found_operation = true;
+					first_operand_str = result_of_reg[2];
+					first_operand_number = get_num_from_var(first_operand_str);
+
+					base_str = result_of_reg[6];
+					base = get_base_from_str(base_str);
+
+					result_of_instr_str = from_decimal_to_base(first_operand_number, base);
+					output_data_message(first_operand_str, base, result_of_instr_str);
+				}
+				else
+				{
+					throw MyException("Wrong output operation syntaxis. Please, try again. May be you have forgotten space symbols.");
+				}
+			}
+			else //значит, что-то нашлось с знаком равно.
+			{
+				for (int j = index_of_assign + assignment_symbol.length(); j < str.length(); j++)  //(a)input = asd2
+				{
+					if (!isspace(str[j]))
+					{
+						if (!isalnum(str[j]))
+						{
+							throw MyException("Variable can`t consists punctuation symbols.");
+						}
+						result_of_instr_str += str[j];
+					}
+				}
+				if (isdigit(result_of_instr_str[0]))
+				{
+					throw MyException("Variable can`t starts with a digit.");
+				}
+				if (!is_var_not_conflict_with_oper(result_of_instr_str))
+				{
+					throw MyException("Conflict between operation and variable names.");
+				}
+				tmp_str = str;
+				tmp_str.erase(index_of_assign);
+
+				regular = "([ ]*)([\\(])([ ]*)([\\w]*)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)"; //Отловим шаблон input
+				if (std::regex_match(tmp_str.c_str(), result_of_reg, regular))
+				{
+					//если нашлось, то это наш input или ошибка.
+					if (this->operations_list[i].first.second != ">>")
+					{
+						continue;
+					}
+					if (result_of_reg[8] != this->operations_list[i].first.first) //inpute != input
+					{
+						continue;
+					}
+
+
+					if (result_of_reg[4].length() != 0) //(base)input=a
+					{
+						base_str = result_of_reg[4];
+						base = get_base_from_str(base_str);
+
+					}
+					else //input() = a
+					{
+						base = 10;
+					}
+
+					found_operation = true;
+					input_str_message(result_of_instr_str, base);
+					std::cin >> input_str;
+					total_result_num = from_base_to_decimal(input_str, base);
+					pair_data.first = result_of_instr_str;
+					pair_data.second = total_result_num;
+					auto it = data.find(pair_data.first);
+					if (it != data.end())
+					{
+						data[result_of_instr_str] = total_result_num;
+						break;
+					}
+
+					data.insert(pair_data);
+					break;
+				}
+				//остальные операции (add, sub, mult и т.д.)
+				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
+				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //нашлась инструкция
+				{
+					throw MyException("Error syntaxis of your instruction, please, check it out and try again.");
+				}
+
+				if (result_of_reg[4] != this->operations_list[i].first.first) // addd
+				{
+					continue;
+				}
+
+				found_operation = true;
+				first_operand_str = result_of_reg[2];
+				first_operand_number = get_num_from_var(first_operand_str);
+				second_operand_str = result_of_reg[6];
+				second_operand_number = get_num_from_var(second_operand_str);
+				total_result_num = this->operations_list[i].second(first_operand_number, second_operand_number);
+				pair_data.first = result_of_instr_str;
+				pair_data.second = total_result_num;
+
+				auto it = data.find(pair_data.first);
+				if (it != data.end())
+				{
+					data[result_of_instr_str] = total_result_num;
+					break;
+				}
+				data.insert(pair_data);
+				break;
+			}
+		}
+
+	}
+	if (!found_operation)
+	{
+		throw MyException("Operation not found.");
+	}
+}
+
+void Interpretator::parse_and_solve(const std::string& str)
+{
+	if (this->is_res_left)
+	{
+		if (this->is_op_before && !this->is_op_between) 
+		{
+		/*
+		* perem = op(op1, op2); peremravnoop(op1, op2);
+		*
+		* output(perem, base); output(perem);
+		* peremravnoinput(base);  peremravnoinput();
+		*/
+			left_and_op_before(str);
+		}
+		else if(this->is_op_after && !this->is_op_between)
+		{
+		/*
+		* perem = (op1, op2)op; perem=(op1, op2)op;
+		*
+		* (perem, base)output; (perem)output;
+		* perem=(base)input;  perem=()input;
+		*/
+			left_and_op_after(str);
+		}
+		else if (this->is_op_before && this->is_op_between)
+		{
+		/*
+		* perem = op1 op op2;;
+		* perem output base;
+		* output(perem)
+		* perem=input(base);  perem=input();
+		*/
+			left_and_op_un_bef_between(str);
+		}
+		else if (this->is_op_after && this->is_op_between)
+		{
+		/*
+		* perem = op1 op op2;;
+		* perem output base;
+		* (perem)output
+		* perem=(base)input;  perem=()input;
+		*/
+			left_and_op_un_aft_between(str);
+		}
+	}
+	else //right
+	{
+		if (this->is_op_before && !this->is_op_between)
+		{
+			/*
+			* op(op1, op2) = perem; op(op1, op2) ravno perem;
+			*
+			* output(perem, base); output(perem);
+			* input(base) = perem;  input() = perem;
+			*/
+			right_and_op_before(str);
+		}
+		else if (this->is_op_after && !this->is_op_between)
+		{
+		/*
+		* (op1, op2)op = perem; (op1, op2)op ravno perem;
+		*
+		* (perem, base)output; (perem)output; ;
+		* (base)input = perem;  ()input = perem;
+		*/
+			right_and_op_after(str);
+		}
+		else if (this->is_op_before && this->is_op_between)
+		{
+		/*
+		* op1 op op2 = perem;
+		* perem output base;
+		* output(perem)
+		* input(base)=perem; input()=perem;
+		*/
+			right_and_op_un_bef_between(str);	
+		}
+		else if (this->is_op_after && this->is_op_between)
+		{
+		/*
+		* op1 op op2 = perem;
+		* perem output base;
+		* (perem)output
+		* (base)input=perem; ()input=perem;
+		*/
+			right_and_op_un_aft_between(str);
 		}
 	}
 }
@@ -2117,9 +2306,12 @@ int sub(const int first, const int second)
 }
 int power(const int a, const int n)
 {
-	int res = 1;
+	unsigned long long int res = 1;
+	//unsigned long long int result;
 	int tmp_n = n;
 	int tmp_a = a;
+
+
 	if (a == 0)
 	{
 		return 0;
@@ -2130,40 +2322,39 @@ int power(const int a, const int n)
 	}
 
 	while (tmp_n)
-		if (tmp_n & 1) {
+	{
+		if (tmp_n & 1)
+		{
 			res *= tmp_a;
+			if (res > INT_MAX)
+			{
+				throw MyException("Int data type overflow.");
+			}
 			--tmp_n;
 		}
-		else {
+		else
+		{
 			tmp_a *= tmp_a;
 			tmp_n >>= 1;
 		}
+	}
 	return res;
 }
 int divis(const int first, const int second)
 {
-	//return first / second; //so slow
-	
-	int tmp_first = first;
-	int counter = 0;
-	while (tmp_first > second)
+	if (second == 0)
 	{
-		tmp_first -= second;
-		counter++;
+		throw MyException("Zero division error.");
 	}
-	return counter;
+	return first / second;
 }
 int rem(const int first, const int second)
 {
-	//return first % second;// So slow
-	int tmp_first = first;
-	//int counter = 0;
-	while (tmp_first > second)
+	if (second == 0)
 	{
-		tmp_first -= second;
-		//counter++;
+		throw MyException("Zero division error.");
 	}
-	return tmp_first;
+	return first % second;
 }
 int my_xor(const int first, const int second)
 {
