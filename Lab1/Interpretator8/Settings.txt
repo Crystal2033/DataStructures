@@ -1,11 +1,11 @@
-#left=
+#left= 
 #op()
 
 
-right=
+#right= #правое присваивание.
 
 #()op
-()(op)
+#()(op)
 #(op)()
 
 #add   sum

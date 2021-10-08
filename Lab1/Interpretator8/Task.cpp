@@ -8,7 +8,6 @@
 #include<regex>
 #include<string>
 #include<map>
-//#include <chrono>
 
 /// <summary>
 /// Писать раздельно left= (то есть left =) - нельзя, иначе теряется смысл контекста, не понятно, это настрока или это синоним.
@@ -77,13 +76,12 @@ bool is_numeric_system_correct(const std::string num, const int base)
 
 void get_synonims(std::string& synonims_line, std::string* synonims)
 {
-	std::string delim = ";";
-	size_t pos = 0;
+	const std::string delim = ";";
+	unsigned int pos = 0;
 	std::string token;
 	int i = 0;
 	while ((pos = synonims_line.find(delim)) != std::string::npos) {
 		token = synonims_line.substr(0, pos);
-		//std::cout << token << std::endl;
 		synonims[i] = token;
 		i++;
 		synonims_line.erase(0, pos + delim.length());
@@ -93,8 +91,6 @@ void get_synonims(std::string& synonims_line, std::string* synonims)
 	{
 		synonims[i] = token;
 	}
-
-	//std::cout << synonims_line << std::endl;
 }
 int from_base_to_decimal(const std::string& num, const int base)
 {
@@ -160,29 +156,35 @@ class Interpretator
 {
 private:
 	std::map<const std::string, int> data;
+
 	bool is_res_left;
 	bool is_res_right;
 	bool is_op_before;
 	bool is_op_after;
 	bool is_op_between;
+
 	std::string assignment_symbol;
+
 	static const int value_of_oper_list = 10;
 	std::pair<std::pair<std::string, std::string>, int (*)(const int, const int)> operations_list[value_of_oper_list]; //value_of_stdrt_oper_name_bank
+
 	void init_operations();
-	void set_flags(const std::string str);
+	void set_flags(const std::string& str);
 	void parse_and_solve(const std::string& str);
-	int get_num_from_var(const std::string operand);
-	int get_base_from_str(const std::string base_str);
+	int get_num_from_var(const std::string& operand) const;
+	int get_base_from_str(const std::string& base_str) const;
 	bool is_var_not_conflict_with_oper(const std::string& var);
+
+
 	void left_and_op_before(const std::string& str);
 	void left_and_op_after(const std::string& str);
-	void left_and_op_un_bef_between(const std::string& str);
-	void left_and_op_un_aft_between(const std::string& str);
+	void left_and_op_between_unar_bef(const std::string& str);
+	void left_and_op_between_unar_aft(const std::string& str);
 
 	void right_and_op_before(const std::string& str);
 	void right_and_op_after(const std::string& str);
-	void right_and_op_un_bef_between(const std::string& str);
-	void right_and_op_un_aft_between(const std::string& str);
+	void right_and_op_between_unar_bef(const std::string& str);
+	void right_and_op_between_unar_aft(const std::string& str);
 
 
 public:
@@ -222,7 +224,7 @@ Interpretator::Interpretator()
 	is_op_between = false;
 	init_operations();
 }
-void Interpretator::set_flags(const std::string str)
+void Interpretator::set_flags(const std::string& str)
 {
 	if (str == "left=")
 	{
@@ -270,10 +272,10 @@ void Interpretator::set_flags(const std::string str)
 void Interpretator::set_settings(const char* settings_file_name = nullptr)
 {
 	char symbol;
-	std::string settings_bank[] = { "left=", "right=", "op()", "()op", "(op)()", "()(op)" };
+	const std::string settings_bank[] = { "left=", "right=", "op()", "()op", "(op)()", "()(op)" };
 	const int value_of_settings_bank = 6;
 	const int value_of_stdrt_oper_name_bank = 10;
-	std::string standart_operations_name_bank[] = {"add", "mult", "sub", "pow", "div", "rem", "xor", "input", "output", "="}; //на всякий случай заполним массив.
+	std::string standart_operations_name_bank[] = {"add", "mult", "sub", "pow", "div", "rem", "xor", "input", "output", "="};
 	
 	std::ifstream file_std_settings;
 
@@ -286,8 +288,7 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 	{
 		throw MyException("File SavedSettings.txt openning error.");
 	}	
-	//int i = 0;
-	int j = 0;
+	//int j = 0;
 	std::getline(file_std_settings, synonims_line, '\n');
 	if (synonims_line.size() == 0)
 	{
@@ -313,7 +314,6 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 		file_read.open(settings_file_name);
 		if (!file_read.is_open())
 		{
-			//std::cout << red << "There is errror with file reading." << white << std::endl;
 			throw MyException("File openning error.");
 		}
 		while (!file_read.eof())
@@ -328,149 +328,147 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 				}
 			}
 
-			for(int j = 0; j < buffer_str.size(); j++)//Instructions
+			for (int j = 0; j < buffer_str.size(); j++)//Instructions
 			{
-				
 				if (buffer_str[j] == '#')
 				{
-					buffer_str.clear();
+					buffer_str.erase(j);
 					break;
 				}
+			}
+
+			if (buffer_str.size() == 0)
+			{
+				continue;
+			}
+
+			instruction = buffer_str; //semantic
 				
-				instruction = buffer_str; //semantic
-				
-				bool is_instr_found = false;
-				std::string what_was_found;
-				for (int i = 0; i < value_of_settings_bank; i++)
+			bool is_instr_found = false;
+			std::string what_was_found;
+			for (int i = 0; i < value_of_settings_bank; i++)
+			{
+
+				if (instruction.find(settings_bank[i]) != std::string::npos) //instruction has found in settings bank
 				{
 
-					if (instruction.find(settings_bank[i]) != std::string::npos) //instruction has found in settings bank
+					is_instr_found = true;
+					what_was_found = settings_bank[i];
+
+					for (int i = 0; i < instruction.size(); i++)
 					{
-
-						is_instr_found = true;
-						what_was_found = settings_bank[i];
-
-						for (int i = 0; i < instruction.size(); i++)
+						if (isspace(instruction[i]))
 						{
-							if (isspace(instruction[i]))
-							{
-								instruction.erase(i, 1);
-								i--;
-							}
+							instruction.erase(i, 1);
+							i--;
 						}
-						if (instruction.size() != what_was_found.size())
+					}
+					if (instruction.size() != what_was_found.size())
+					{
+						file_read.close();
+						if (file_read.bad())
 						{
+							throw MyException("File closing error.");
+						}
+						throw MyException("Setting instruction has not found. Check your setting file and try again.");
+					}
+
+					if (instruction != settings_bank[i])
+					{
+						continue;
+					}
+						
+					set_flags(what_was_found);
+					break;
+				}
+			}
+
+
+			if (!is_instr_found) //that mean synonims or something bad.
+			{
+				for (int k = 0; k < instruction.size(); k++) //deleting start space symbols
+				{
+					if (isspace(instruction[k]))
+					{
+						instruction.erase(k, 1);
+						k--;
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				for (int i = 0; i < value_of_stdrt_oper_name_bank; i++)
+				{
+					int find_index = -1;
+					find_index = instruction.find(standart_operations_name_bank[i]);
+					if (find_index != std::string::npos) //instruction has found in stdrt_opers_name bank
+					{
+						if (find_index != 0)
+						{
+							continue;
+						}
+						is_instr_found = true;
+						what_was_found = standart_operations_name_bank[i]; 
+						std::regex regular("([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]{1,32})");
+						std::cmatch result_of_reg;
+						if (!std::regex_match(instruction.c_str(), result_of_reg, regular))
+						{								
 							file_read.close();
 							if (file_read.bad())
 							{
 								throw MyException("File closing error.");
 							}
-							throw MyException("Setting instruction has not found. Check your setting file and try again.");
+							throw MyException("Syntax error in setting file (get synonim error).");
 						}
-
-						if (instruction != settings_bank[i])
+						std::string first_word = result_of_reg[1].str();
+						std::string second_word = result_of_reg[3].str();
+						if (first_word != standart_operations_name_bank[i])
 						{
 							continue;
 						}
-						
-						set_flags(what_was_found);
-						//std::cout << yellow << instruction << white << std::endl; //one instr line.
-						//std::cout << green << "Found: " << blue << what_was_found << white << std::endl;
-						break;
-					}
-				}
-
-
-				if (!is_instr_found) //that mean synonims or something bad.
-				{
-					for (int k = 0; k < instruction.size(); k++)
-					{
-						if (isspace(instruction[k]))
+						if (first_word.size() != what_was_found.size())
 						{
-							instruction.erase(k, 1);
-							k--;
+							file_read.close();
+								if (file_read.bad())
+								{
+									throw MyException("File closing error.");
+								}
+							throw MyException("Syntax error in setting file (get synonim error).");
 						}
-						else
+
+						for (int j = 0; j < value_of_stdrt_oper_name_bank; j++)
 						{
-							break;
-						}
-					}
-					for (int i = 0; i < value_of_stdrt_oper_name_bank; i++)
-					{
-						int find_index = -1;
-						find_index = instruction.find(standart_operations_name_bank[i]);
-						if (find_index != std::string::npos) //instruction has found in stdrt_opers_name bank
-						{
-							if (find_index != 0)
+							if (second_word == standart_operations_name_bank[j])
 							{
-								continue;
-							}
-							is_instr_found = true;
-							what_was_found = standart_operations_name_bank[i]; 
-							std::regex regular("([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]* )([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]{1,32})");
-							std::cmatch result_of_reg;
-							if (!std::regex_match(instruction.c_str(), result_of_reg, regular))
-							{								
 								file_read.close();
 								if (file_read.bad())
 								{
 									throw MyException("File closing error.");
 								}
-								throw MyException("Syntax error in setting file (get synonim error).");
+								throw MyException("There are two simillar synonims. Please, choose synonims reasonable.");
 							}
-							std::string first_word = result_of_reg[1].str();
-							std::string second_word = result_of_reg[3].str();
-							if (first_word != standart_operations_name_bank[i])
-							{
-								continue;
-							}
-							if (first_word.size() != what_was_found.size())
-							{
-								file_read.close();
-									if (file_read.bad())
-									{
-										throw MyException("File closing error.");
-									}
-								throw MyException("Syntax error in setting file (get synonim error).");
-							}
-
-							for (int j = 0; j < value_of_stdrt_oper_name_bank; j++)
-							{
-								if (second_word == standart_operations_name_bank[j])
-								{
-									file_read.close();
-									if (file_read.bad())
-									{
-										throw MyException("File closing error.");
-									}
-									throw MyException("There are two simillar synonims. Please, choose synonims reasonable.");
-								}
-							}
-							standart_operations_name_bank[i] = second_word; //synonim
-							
-							operations_list[i].first.first = second_word;
-							break;
 						}
+						standart_operations_name_bank[i] = second_word; //synonim
+						operations_list[i].first.first = second_word;
+						break;
 					}
 				}
-				
-				if (!is_instr_found) //instruction is not found
-				{
-					file_read.close();
-					if (file_read.bad())
-					{
-						throw MyException("File closing error.");
-					}
-					throw MyException("Setting instruction has not found. Check your setting file and try again.");
-				}
-
-				if (!buffer_str[j])
-				{
-					break;
-				}
-				instruction.clear();
-				break;
 			}
+				
+			if (!is_instr_found) //instruction is not found
+			{
+				file_read.close();
+				if (file_read.bad())
+				{
+					throw MyException("File closing error.");
+				}
+				throw MyException("Setting instruction has not found. Check your setting file and try again.");
+			}
+
+			instruction.clear();
+			break;
 		}
 
 
@@ -488,7 +486,7 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 		{
 			throw MyException("File openning error.");
 		}
-		for (int i = 0; i < value_of_stdrt_oper_name_bank; i++) //CORRECT
+		for (int i = 0; i < value_of_stdrt_oper_name_bank; i++)
 		{
 			file_out << standart_operations_name_bank[i] << ';';
 		}
@@ -524,7 +522,6 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 		{
 			throw MyException("File closing error.");
 		}
-
 	}
 	else
 	{
@@ -560,9 +557,7 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 		{
 			throw MyException("File closing error.");
 		}
-
 	}
-
 }
 
 void Interpretator::interpretate_instr(const char* instr_file_name)
@@ -596,6 +591,11 @@ void Interpretator::interpretate_instr(const char* instr_file_name)
 
 		if (symbol == ']' && !in_comment)
 		{
+			file_with_instr.close();
+			if (file_with_instr.bad())
+			{
+				throw MyException("File closing error.");
+			}
 			throw MyException("Was found closed bracket without open bracket.");
 		}
 		else if (symbol == '[' || in_comment)
@@ -617,6 +617,11 @@ void Interpretator::interpretate_instr(const char* instr_file_name)
 
 			if (file_with_instr.eof() && in_comment)
 			{
+				file_with_instr.close();
+				if (file_with_instr.bad())
+				{
+					throw MyException("File closing error.");
+				}
 				throw MyException("There is no closed bracket for opened bracket.");
 			}
 
@@ -648,7 +653,7 @@ void Interpretator::interpretate_instr(const char* instr_file_name)
 
 		if (symbol == EOF && instruction.length() != 0)
 		{
-			if (this->is_op_between)
+			if (this->is_op_between) //так как мы сохраняем проблемы в записи, где op посередине, то обрабатывать конец файла нужно так:
 			{
 				int space_counter = 0;
 				for (int j = 0; j < instruction.length(); j++)
@@ -660,8 +665,18 @@ void Interpretator::interpretate_instr(const char* instr_file_name)
 				}
 				if (space_counter == instruction.length())
 				{
+					file_with_instr.close();
+					if (file_with_instr.bad())
+					{
+						throw MyException("File closing error.");
+					}
 					return;
 				}
+			}
+
+			if (file_with_instr.bad())
+			{
+				throw MyException("File closing error.");
 			}
 			throw MyException("Your instruction is incorrect.");
 		}
@@ -673,11 +688,16 @@ void Interpretator::interpretate_instr(const char* instr_file_name)
 	{
 		std::cout << blue << "-----------------------------------------" << white << std::endl;
 	}
+	file_with_instr.close();
+	if (file_with_instr.bad())
+	{
+		throw MyException("File closing error.");
+	}
 	return;
 }
 
 
-int Interpretator::get_num_from_var(const std::string operand)
+int Interpretator::get_num_from_var(const std::string& operand) const
 {
 	int operand_number;
 	if (isdigit(operand[0]) || operand[0] == '-') //либо это число; либо это переменная, начинающаяся с цифры.
@@ -701,7 +721,7 @@ int Interpretator::get_num_from_var(const std::string operand)
 }
 
 
-int Interpretator::get_base_from_str(const std::string base_str)
+int Interpretator::get_base_from_str(const std::string& base_str) const
 {
 	int base;
 	if (isdigit(base_str[0])) //либо это число; либо это переменная, начинающаяся с цифры.
@@ -1080,7 +1100,7 @@ void Interpretator::left_and_op_after(const std::string& str)
 	}
 }
 
-void Interpretator::left_and_op_un_bef_between(const std::string& str)
+void Interpretator::left_and_op_between_unar_bef(const std::string& str)
 {
 	std::string first_operand_str;
 	std::string second_operand_str;
@@ -1262,7 +1282,7 @@ void Interpretator::left_and_op_un_bef_between(const std::string& str)
 	}
 }
 
-void Interpretator::left_and_op_un_aft_between(const std::string& str)
+void Interpretator::left_and_op_between_unar_aft(const std::string& str)
 {
 	std::string first_operand_str;
 	std::string second_operand_str;
@@ -1835,7 +1855,7 @@ void Interpretator::right_and_op_after(const std::string& str)
 	}
 }
 
-void Interpretator::right_and_op_un_bef_between(const std::string& str)
+void Interpretator::right_and_op_between_unar_bef(const std::string& str)
 {
 	std::string first_operand_str;
 	std::string second_operand_str;
@@ -2019,7 +2039,7 @@ void Interpretator::right_and_op_un_bef_between(const std::string& str)
 	}
 }
 
-void Interpretator::right_and_op_un_aft_between(const std::string& str)
+void Interpretator::right_and_op_between_unar_aft(const std::string& str)
 {
 	std::string first_operand_str;
 	std::string second_operand_str;
@@ -2233,7 +2253,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 		* output(perem)
 		* perem=input(base);  perem=input();
 		*/
-			left_and_op_un_bef_between(str);
+			left_and_op_between_unar_bef(str);
 		}
 		else if (this->is_op_after && this->is_op_between)
 		{
@@ -2243,7 +2263,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 		* (perem)output
 		* perem=(base)input;  perem=()input;
 		*/
-			left_and_op_un_aft_between(str);
+			left_and_op_between_unar_aft(str);
 		}
 	}
 	else //right
@@ -2276,7 +2296,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 		* output(perem)
 		* input(base)=perem; input()=perem;
 		*/
-			right_and_op_un_bef_between(str);	
+			right_and_op_between_unar_bef(str);	
 		}
 		else if (this->is_op_after && this->is_op_between)
 		{
@@ -2286,7 +2306,7 @@ void Interpretator::parse_and_solve(const std::string& str)
 		* (perem)output
 		* (base)input=perem; ()input=perem;
 		*/
-			right_and_op_un_aft_between(str);
+			right_and_op_between_unar_aft(str);
 		}
 	}
 }
@@ -2415,12 +2435,6 @@ int main(int argc, char* argv[]) //settings ---- instr_file
 	}
 	try
 	{
-	/*	auto start = std::chrono::high_resolution_clock::now();
-	std::cout << rem(112387285, 2528252) << std::endl;
-	auto end = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<float> total_time = end - start;
-	std::cout << green << total_time.count() << white << std::endl;
-	return 0;*/
 		Interpretator interpretator;
 		if (argc == 2)
 		{

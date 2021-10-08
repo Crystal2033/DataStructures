@@ -12,11 +12,13 @@ output(E);]
 
 
 [left= op()]
-[output(100, 2);
+addbar= input(2);
+output(addbar,3);
+output(100, 2);
 output(98);
-A = input(16); [10]
-B = input(2);  [1111]
-addbar = input(2);
+A= input(16); [10]
+B= input(2);  [1111]
+addbar= input(2);
 output(addbar);
 [C = input();   [2]
 E = add(A, B);
@@ -26,7 +28,7 @@ output(D, 10);
 output(D);
 output(D);
 output(F);
-a = input();]]
+a = input();]
 
 
 [left=  ()op]
@@ -127,7 +129,7 @@ right=  ()op  -------   add   sum  --------    sub prod  ---   pow in_my_pow  --
 ()input = a;]]
 
 [right= ()(op)]
-(2)input = addbar;
+[(2)input = addbar;
 addbar output 2;
 (98)output;
 (16)input = A; [10]
@@ -139,7 +141,7 @@ B sub C = D;
 A pow C = F;
 E output 10;
 D output 10;
-(F)output;]
+(F)output;]]
 
 [B = input(16);
 S = mult(-2, 1);
