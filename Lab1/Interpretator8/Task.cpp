@@ -1,4 +1,4 @@
-#include<iostream>
+п»ї#include<iostream>
 #include <fstream>
 #include <stdlib.h>
 #include<cctype>
@@ -10,8 +10,8 @@
 #include<map>
 
 /// <summary>
-/// Писать раздельно left= (то есть left =) - нельзя, иначе теряется смысл контекста, не понятно, это настрока или это синоним.
-/// SavedSettings должен содержать какие-либо синонимы.
+/// РџРёСЃР°С‚СЊ СЂР°Р·РґРµР»СЊРЅРѕ left= (С‚Рѕ РµСЃС‚СЊ left =) - РЅРµР»СЊР·СЏ, РёРЅР°С‡Рµ С‚РµСЂСЏРµС‚СЃСЏ СЃРјС‹СЃР» РєРѕРЅС‚РµРєСЃС‚Р°, РЅРµ РїРѕРЅСЏС‚РЅРѕ, СЌС‚Рѕ РЅР°СЃС‚СЂРѕРєР° РёР»Рё СЌС‚Рѕ СЃРёРЅРѕРЅРёРј.
+/// SavedSettings РґРѕР»Р¶РµРЅ СЃРѕРґРµСЂР¶Р°С‚СЊ РєР°РєРёРµ-Р»РёР±Рѕ СЃРёРЅРѕРЅРёРјС‹.
 /// </summary>
 
 class MyException : public std::exception
@@ -26,7 +26,7 @@ public:
 		//err_msg = err.c_str();
 		error_msg_str = err;
 	}
-	/*const char* what() const override 
+	/*const char* what() const override
 	{
 		std::cout << err_msg << std::endl;
 		return err_msg;
@@ -141,7 +141,7 @@ std::string from_decimal_to_base(int value, int base)
 
 	std::string result = "";
 	int remained = 0;
-	
+
 	while (value > 0)
 	{
 		remained = value % base;
@@ -171,7 +171,7 @@ private:
 	void init_operations();
 	void set_flags(const std::string& str);
 	void parse_and_solve(const std::string& str);
-	int get_num_from_var(const std::string& operand) const;
+	int get_num_from_var(const std::string& operand);
 	int get_base_from_str(const std::string& base_str) const;
 	bool is_var_not_conflict_with_oper(const std::string& var);
 
@@ -191,7 +191,7 @@ public:
 	void set_settings(const char* settings_file_name);
 	void interpretate_instr(const char* instr_file_name); //mb void is better.
 	Interpretator();
-	
+
 };
 
 void input_str_message(const std::string& var, const int base)
@@ -275,8 +275,8 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 	const std::string settings_bank[] = { "left=", "right=", "op()", "()op", "(op)()", "()(op)" };
 	const int value_of_settings_bank = 6;
 	const int value_of_stdrt_oper_name_bank = 10;
-	std::string standart_operations_name_bank[] = {"add", "mult", "sub", "pow", "div", "rem", "xor", "input", "output", "="};
-	
+	std::string standart_operations_name_bank[] = { "add", "mult", "sub", "pow", "div", "rem", "xor", "input", "output", "=" };
+
 	std::ifstream file_std_settings;
 
 	//TAKING SAVED SYNONIMS
@@ -287,7 +287,7 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 	if (!file_std_settings.is_open())
 	{
 		throw MyException("File SavedSettings.txt openning error.");
-	}	
+	}
 	//int j = 0;
 	std::getline(file_std_settings, synonims_line, '\n');
 	if (synonims_line.size() == 0)
@@ -299,14 +299,14 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 	get_synonims(synonims_line, synonims);
 	synonims_line.clear();
 	file_std_settings.close();
-	
+
 	for (int i = 0; i < value_of_stdrt_oper_name_bank; i++)
 	{
 		standart_operations_name_bank[i] = synonims[i];
 		this->operations_list[i].first.first = synonims[i];
 	}
 	//TAKING SAVED SYNONIMS
-	
+
 	std::string instruction;
 	if (settings_file_name != nullptr)
 	{
@@ -343,7 +343,7 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 			}
 
 			instruction = buffer_str; //semantic
-				
+
 			bool is_instr_found = false;
 			std::string what_was_found;
 			for (int i = 0; i < value_of_settings_bank; i++)
@@ -377,7 +377,7 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 					{
 						continue;
 					}
-						
+
 					set_flags(what_was_found);
 					break;
 				}
@@ -410,11 +410,11 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 							continue;
 						}
 						is_instr_found = true;
-						what_was_found = standart_operations_name_bank[i]; 
-						std::regex regular("([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]{1,32})");
+						what_was_found = standart_operations_name_bank[i];
+						std::regex regular("([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]{1,32})");
 						std::cmatch result_of_reg;
 						if (!std::regex_match(instruction.c_str(), result_of_reg, regular))
-						{								
+						{
 							file_read.close();
 							if (file_read.bad())
 							{
@@ -431,10 +431,10 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 						if (first_word.size() != what_was_found.size())
 						{
 							file_read.close();
-								if (file_read.bad())
-								{
-									throw MyException("File closing error.");
-								}
+							if (file_read.bad())
+							{
+								throw MyException("File closing error.");
+							}
 							throw MyException("Syntax error in setting file (get synonim error).");
 						}
 
@@ -456,7 +456,7 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 					}
 				}
 			}
-				
+
 			if (!is_instr_found) //instruction is not found
 			{
 				file_read.close();
@@ -468,7 +468,7 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 			}
 
 			instruction.clear();
-			break;
+			//break;
 		}
 
 
@@ -495,7 +495,7 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 		{
 			file_out << "left=" << std::endl;
 		}
-		else if(this->is_res_right)
+		else if (this->is_res_right)
 		{
 			file_out << "right=" << std::endl;
 		}
@@ -532,7 +532,7 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 		{
 			throw MyException("File openning for reading saved settings error.");
 		}
-		
+
 
 		while ((symbol = file_std_settings.get()) != '\n' && (symbol != EOF)) //taking synonims
 		{
@@ -577,7 +577,7 @@ void Interpretator::interpretate_instr(const char* instr_file_name)
 	while (!file_with_instr.eof())
 	{
 		symbol = (char)file_with_instr.get();
-		if (!this->is_op_between) //с этой операцией все сложнее (с точки зрения парсинга: a = remainininin_my_tmp)
+		if (!this->is_op_between) //СЃ СЌС‚РѕР№ РѕРїРµСЂР°С†РёРµР№ РІСЃРµ СЃР»РѕР¶РЅРµРµ (СЃ С‚РѕС‡РєРё Р·СЂРµРЅРёСЏ РїР°СЂСЃРёРЅРіР°: a = remainininin_my_tmp)
 		{
 			if (isspace(symbol))
 			{
@@ -642,8 +642,8 @@ void Interpretator::interpretate_instr(const char* instr_file_name)
 			//std::cout << azure << instruction << white << std::endl;
 			line_counter++;
 			std::cout << blue << "-----------------------------------------" << white << std::endl;
-			std::cout << cyan  << "Line №" << line_counter << ". " << white << std::endl;
-			std::cout << "Written instruction: " << cyan <<instruction << white << std::endl << std::endl;
+			std::cout << cyan << "Line в„–" << line_counter << ". " << white << std::endl;
+			std::cout << "Written instruction: " << cyan << instruction << white << std::endl << std::endl;
 			parse_and_solve(instruction);
 			std::cout << "Interpretate status: " << green << "Success!" << white << std::endl;
 			//std::cout << yellow << "-----------------------------------------" << white << std::endl;
@@ -653,7 +653,7 @@ void Interpretator::interpretate_instr(const char* instr_file_name)
 
 		if (symbol == EOF && instruction.length() != 0)
 		{
-			if (this->is_op_between) //так как мы сохраняем проблемы в записи, где op посередине, то обрабатывать конец файла нужно так:
+			if (this->is_op_between) //С‚Р°Рє РєР°Рє РјС‹ СЃРѕС…СЂР°РЅСЏРµРј РїСЂРѕР±Р»РµРјС‹ РІ Р·Р°РїРёСЃРё, РіРґРµ op РїРѕСЃРµСЂРµРґРёРЅРµ, С‚Рѕ РѕР±СЂР°Р±Р°С‚С‹РІР°С‚СЊ РєРѕРЅРµС† С„Р°Р№Р»Р° РЅСѓР¶РЅРѕ С‚Р°Рє:
 			{
 				int space_counter = 0;
 				for (int j = 0; j < instruction.length(); j++)
@@ -682,7 +682,7 @@ void Interpretator::interpretate_instr(const char* instr_file_name)
 		}
 
 		instruction += symbol;
-		
+
 	}
 	if (line_counter)
 	{
@@ -697,10 +697,10 @@ void Interpretator::interpretate_instr(const char* instr_file_name)
 }
 
 
-int Interpretator::get_num_from_var(const std::string& operand) const
+int Interpretator::get_num_from_var(const std::string& operand)
 {
 	int operand_number;
-	if (isdigit(operand[0]) || operand[0] == '-') //либо это число; либо это переменная, начинающаяся с цифры.
+	if (isdigit(operand[0]) || operand[0] == '-') //Р»РёР±Рѕ СЌС‚Рѕ С‡РёСЃР»Рѕ; Р»РёР±Рѕ СЌС‚Рѕ РїРµСЂРµРјРµРЅРЅР°СЏ, РЅР°С‡РёРЅР°СЋС‰Р°СЏСЃСЏ СЃ С†РёС„СЂС‹.
 	{
 		if (!is_numeric_system_correct(operand, 10))
 		{
@@ -713,7 +713,10 @@ int Interpretator::get_num_from_var(const std::string& operand) const
 		auto it = data.find(operand);
 		if (it == data.end())
 		{
-			throw MyException("Variable not found.");
+			std::pair<const std::string, int> tmp_pair(operand, 0);
+			data.insert(tmp_pair);
+			return 0;
+			//throw MyException("Variable not found.");
 		}
 		operand_number = (*it).second;
 	}
@@ -724,14 +727,14 @@ int Interpretator::get_num_from_var(const std::string& operand) const
 int Interpretator::get_base_from_str(const std::string& base_str) const
 {
 	int base;
-	if (isdigit(base_str[0])) //либо это число; либо это переменная, начинающаяся с цифры.
+	if (isdigit(base_str[0])) //Р»РёР±Рѕ СЌС‚Рѕ С‡РёСЃР»Рѕ; Р»РёР±Рѕ СЌС‚Рѕ РїРµСЂРµРјРµРЅРЅР°СЏ, РЅР°С‡РёРЅР°СЋС‰Р°СЏСЃСЏ СЃ С†РёС„СЂС‹.
 	{
 		if (!is_numeric_system_correct(base_str, 10))
 		{
 			throw MyException("Variable cannot start with a digit.");
 		}
 		base = from_base_to_decimal(base_str, 10);
-		
+
 	}
 	else
 	{
@@ -768,10 +771,10 @@ void Interpretator::left_and_op_before(const std::string& str)
 	bool found_operation = false;
 	int index_of_find = -1;
 
-	for (int i = 0; i < this->value_of_oper_list - 1; i++) //в последнем элементе лежит знак операции присваивания, ее не нужно искать.
+	for (int i = 0; i < this->value_of_oper_list - 1; i++) //РІ РїРѕСЃР»РµРґРЅРµРј СЌР»РµРјРµРЅС‚Рµ Р»РµР¶РёС‚ Р·РЅР°Рє РѕРїРµСЂР°С†РёРё РїСЂРёСЃРІР°РёРІР°РЅРёСЏ, РµРµ РЅРµ РЅСѓР¶РЅРѕ РёСЃРєР°С‚СЊ.
 	{
 		index_of_find = str.find(this->operations_list[i].first.first);
-		if (index_of_find != std::string::npos) //найдена какая-то инструкция.
+		if (index_of_find != std::string::npos) //РЅР°Р№РґРµРЅР° РєР°РєР°СЏ-С‚Рѕ РёРЅСЃС‚СЂСѓРєС†РёСЏ.
 		{
 			first_operand_str.clear();
 			second_operand_str.clear();
@@ -780,7 +783,7 @@ void Interpretator::left_and_op_before(const std::string& str)
 			tmp_str.clear();
 			if (index_of_find == 0) //output. OR ERROR.
 			{
-				regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])";
+				regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])";
 				if (!std::regex_match(str.c_str(), result_of_reg, regular))
 				{
 					throw MyException("Wrong instruction. Regular check error.");
@@ -845,12 +848,12 @@ void Interpretator::left_and_op_before(const std::string& str)
 				}
 				tmp_str = str;
 				tmp_str.erase(0, index_of_assign + assignment_symbol.length());
-				regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)(\\()([\\w\\-]+)(\\,)([\\w\\-]+)(\\))";
+				regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)(\\()([\\w\\-]+)(\\,)([\\w\\-]+)(\\))";
 				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //could be input
 				{
 					if (this->operations_list[i].first.second == ">>") //input
 					{
-						regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)(\\()([\\w]*)(\\))";
+						regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)(\\()([\\w]*)(\\))";
 						if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular))
 						{
 							throw MyException("Wrong instruction. Regular check error.");
@@ -936,10 +939,10 @@ void Interpretator::left_and_op_after(const std::string& str)
 	std::string tmp_str;
 	bool found_operation = false;
 	int index_of_find = -1;
-	for (int i = 0; i < this->value_of_oper_list - 1; i++) //в последнем элементе лежит знак операции присваивания, ее не нужно искать.
+	for (int i = 0; i < this->value_of_oper_list - 1; i++) //РІ РїРѕСЃР»РµРґРЅРµРј СЌР»РµРјРµРЅС‚Рµ Р»РµР¶РёС‚ Р·РЅР°Рє РѕРїРµСЂР°С†РёРё РїСЂРёСЃРІР°РёРІР°РЅРёСЏ, РµРµ РЅРµ РЅСѓР¶РЅРѕ РёСЃРєР°С‚СЊ.
 	{
 		index_of_find = str.find(this->operations_list[i].first.first);
-		if (index_of_find != std::string::npos) //найдена какая-то инструкция.
+		if (index_of_find != std::string::npos) //РЅР°Р№РґРµРЅР° РєР°РєР°СЏ-С‚Рѕ РёРЅСЃС‚СЂСѓРєС†РёСЏ.
 		{
 			first_operand_str.clear();
 			second_operand_str.clear();
@@ -948,7 +951,7 @@ void Interpretator::left_and_op_after(const std::string& str)
 			tmp_str.clear();
 			if (str[0] == '(') //output. OR ERROR.
 			{
-				regular = "([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
+				regular = "([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)";
 				if (!std::regex_match(str.c_str(), result_of_reg, regular))
 				{
 					throw MyException("Wrong instruction. Regular check error.");
@@ -1016,12 +1019,12 @@ void Interpretator::left_and_op_after(const std::string& str)
 				}
 				tmp_str = str;
 				tmp_str.erase(0, index_of_assign + assignment_symbol.length());
-				regular = "(\\()([\\w\\-]+)(\\,)([\\w\\-]+)(\\))([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
+				regular = "(\\()([\\w\\-]+)(\\,)([\\w\\-]+)(\\))([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)";
 				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //could be input
 				{
 					if (this->operations_list[i].first.second == ">>") //input
 					{
-						regular = "(\\()([\\w]*)(\\))([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
+						regular = "(\\()([\\w]*)(\\))([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)";
 						if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular))
 						{
 							throw MyException("Wrong instruction. Regular check error.");
@@ -1121,7 +1124,7 @@ void Interpretator::left_and_op_between_unar_bef(const std::string& str)
 	for (int i = 0; i < this->value_of_oper_list - 1; i++)
 	{
 		index_of_find = str.find(this->operations_list[i].first.first);
-		if (index_of_find != std::string::npos) //что-то нашлось
+		if (index_of_find != std::string::npos) //С‡С‚Рѕ-С‚Рѕ РЅР°С€Р»РѕСЃСЊ
 		{
 
 			first_operand_str.clear();
@@ -1131,7 +1134,7 @@ void Interpretator::left_and_op_between_unar_bef(const std::string& str)
 			tmp_str.clear();
 
 			index_of_assign = str.find(assignment_symbol);
-			if (index_of_assign == std::string::npos) //output или error
+			if (index_of_assign == std::string::npos) //output РёР»Рё error
 			{
 
 				if (this->operations_list[i].first.second != "<<")  //(addbar)output;
@@ -1139,7 +1142,7 @@ void Interpretator::left_and_op_between_unar_bef(const std::string& str)
 					continue;
 				}
 
-				regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)";
+				regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)";
 				if (std::regex_match(str.c_str(), result_of_reg, regular)) // output(what_to_output);
 				{
 					if (result_of_reg[2] != this->operations_list[i].first.first)
@@ -1159,7 +1162,7 @@ void Interpretator::left_and_op_between_unar_bef(const std::string& str)
 				}
 				//else
 				//a output b;
-				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
+				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
 				if (std::regex_match(str.c_str(), result_of_reg, regular))
 				{
 					found_operation = true;
@@ -1177,7 +1180,7 @@ void Interpretator::left_and_op_between_unar_bef(const std::string& str)
 					throw MyException("Wrong output operation syntaxis. Please, try again. May be you have forgotten space symbols.");
 				}
 			}
-			else //значит, что-то нашлось с знаком равно.
+			else //Р·РЅР°С‡РёС‚, С‡С‚Рѕ-С‚Рѕ РЅР°С€Р»РѕСЃСЊ СЃ Р·РЅР°РєРѕРј СЂР°РІРЅРѕ.
 			{
 				for (int j = 0; j < index_of_assign; j++)
 				{
@@ -1201,10 +1204,10 @@ void Interpretator::left_and_op_between_unar_bef(const std::string& str)
 				tmp_str = str;
 				tmp_str.erase(0, index_of_assign + assignment_symbol.length());
 
-				regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w]*)([ ]*)([\\)])([ ]*)"; //Отловим шаблон input
+				regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w]*)([ ]*)([\\)])([ ]*)"; //РћС‚Р»РѕРІРёРј С€Р°Р±Р»РѕРЅ input
 				if (std::regex_match(tmp_str.c_str(), result_of_reg, regular))
 				{
-					//если нашлось, то это наш input или ошибка.
+					//РµСЃР»Рё РЅР°С€Р»РѕСЃСЊ, С‚Рѕ СЌС‚Рѕ РЅР°С€ input РёР»Рё РѕС€РёР±РєР°.
 					if (this->operations_list[i].first.second != ">>") //addbar= input(2);
 					{
 						continue;
@@ -1244,9 +1247,9 @@ void Interpretator::left_and_op_between_unar_bef(const std::string& str)
 					data.insert(pair_data);
 					break;
 				}
-				//остальные операции (add, sub, mult и т.д.)
-				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
-				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //нашлась инструкция
+				//РѕСЃС‚Р°Р»СЊРЅС‹Рµ РѕРїРµСЂР°С†РёРё (add, sub, mult Рё С‚.Рґ.)
+				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
+				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //РЅР°С€Р»Р°СЃСЊ РёРЅСЃС‚СЂСѓРєС†РёСЏ
 				{
 					throw MyException("Error syntaxis of your instruction, please, check it out and try again.");
 				}
@@ -1304,7 +1307,7 @@ void Interpretator::left_and_op_between_unar_aft(const std::string& str)
 	for (int i = 0; i < this->value_of_oper_list - 1; i++)
 	{
 		index_of_find = str.find(this->operations_list[i].first.first);
-		if (index_of_find != std::string::npos) //что-то нашлось
+		if (index_of_find != std::string::npos) //С‡С‚Рѕ-С‚Рѕ РЅР°С€Р»РѕСЃСЊ
 		{
 
 			first_operand_str.clear();
@@ -1314,7 +1317,7 @@ void Interpretator::left_and_op_between_unar_aft(const std::string& str)
 			tmp_str.clear();
 
 			index_of_assign = str.find(assignment_symbol);
-			if (index_of_assign == std::string::npos) //output или error
+			if (index_of_assign == std::string::npos) //output РёР»Рё error
 			{
 
 				if (this->operations_list[i].first.second != "<<")  //(addbar)output;
@@ -1322,7 +1325,7 @@ void Interpretator::left_and_op_between_unar_aft(const std::string& str)
 					continue;
 				}
 
-				regular = "([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)";
+				regular = "([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)([ ]*)";
 				if (std::regex_match(str.c_str(), result_of_reg, regular)) // output(what_to_output);
 				{
 					if (result_of_reg[8] != this->operations_list[i].first.first)
@@ -1342,7 +1345,7 @@ void Interpretator::left_and_op_between_unar_aft(const std::string& str)
 				}
 				//else
 				//a output b;
-				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
+				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
 				if (std::regex_match(str.c_str(), result_of_reg, regular))
 				{
 					found_operation = true;
@@ -1360,7 +1363,7 @@ void Interpretator::left_and_op_between_unar_aft(const std::string& str)
 					throw MyException("Wrong output operation syntaxis. Please, try again. May be you have forgotten space symbols.");
 				}
 			}
-			else //значит, что-то нашлось с знаком равно.
+			else //Р·РЅР°С‡РёС‚, С‡С‚Рѕ-С‚Рѕ РЅР°С€Р»РѕСЃСЊ СЃ Р·РЅР°РєРѕРј СЂР°РІРЅРѕ.
 			{
 				for (int j = 0; j < index_of_assign; j++)
 				{
@@ -1384,10 +1387,10 @@ void Interpretator::left_and_op_between_unar_aft(const std::string& str)
 				tmp_str = str;
 				tmp_str.erase(0, index_of_assign + assignment_symbol.length());
 
-				regular = "([ ]*)([\\(])([ ]*)([\\w]*)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)"; //Отловим шаблон input
+				regular = "([ ]*)([\\(])([ ]*)([\\w]*)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)([ ]*)"; //РћС‚Р»РѕРІРёРј С€Р°Р±Р»РѕРЅ input
 				if (std::regex_match(tmp_str.c_str(), result_of_reg, regular))
 				{
-					//если нашлось, то это наш input или ошибка.
+					//РµСЃР»Рё РЅР°С€Р»РѕСЃСЊ, С‚Рѕ СЌС‚Рѕ РЅР°С€ input РёР»Рё РѕС€РёР±РєР°.
 					if (this->operations_list[i].first.second != ">>")
 					{
 						continue;
@@ -1425,9 +1428,9 @@ void Interpretator::left_and_op_between_unar_aft(const std::string& str)
 					data.insert(pair_data);
 					break;
 				}
-				//остальные операции (add, sub, mult и т.д.)
-				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
-				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //нашлась инструкция
+				//РѕСЃС‚Р°Р»СЊРЅС‹Рµ РѕРїРµСЂР°С†РёРё (add, sub, mult Рё С‚.Рґ.)
+				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
+				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //РЅР°С€Р»Р°СЃСЊ РёРЅСЃС‚СЂСѓРєС†РёСЏ
 				{
 					throw MyException("Error syntaxis of your instruction, please, check it out and try again.");
 				}
@@ -1483,10 +1486,10 @@ void Interpretator::right_and_op_before(const std::string& str)
 	bool found_operation = false;
 	int index_of_find = -1;
 
-	for (int i = 0; i < this->value_of_oper_list - 1; i++) //в последнем элементе лежит знак операции присваивания, ее не нужно искать.
+	for (int i = 0; i < this->value_of_oper_list - 1; i++) //РІ РїРѕСЃР»РµРґРЅРµРј СЌР»РµРјРµРЅС‚Рµ Р»РµР¶РёС‚ Р·РЅР°Рє РѕРїРµСЂР°С†РёРё РїСЂРёСЃРІР°РёРІР°РЅРёСЏ, РµРµ РЅРµ РЅСѓР¶РЅРѕ РёСЃРєР°С‚СЊ.
 	{
 		index_of_find = str.find(this->operations_list[i].first.first);
-		if (index_of_find != std::string::npos) //найдена какая-то инструкция.
+		if (index_of_find != std::string::npos) //РЅР°Р№РґРµРЅР° РєР°РєР°СЏ-С‚Рѕ РёРЅСЃС‚СЂСѓРєС†РёСЏ.
 		{
 			first_operand_str.clear();
 			second_operand_str.clear();
@@ -1506,7 +1509,7 @@ void Interpretator::right_and_op_before(const std::string& str)
 					continue;
 				}
 
-				regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])";
+				regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])";
 				if (!std::regex_match(str.c_str(), result_of_reg, regular))
 				{
 					throw MyException("Wrong instruction. Regular check error.");
@@ -1570,7 +1573,7 @@ void Interpretator::right_and_op_before(const std::string& str)
 				}
 				tmp_str = str;
 				tmp_str.erase(index_of_assign);
-				regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)(\\()([\\w]*)(\\))";
+				regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)(\\()([\\w]*)(\\))";
 				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular))
 				{
 					throw MyException("Wrong instruction. Regular check error.");
@@ -1628,7 +1631,7 @@ void Interpretator::right_and_op_before(const std::string& str)
 				}
 				tmp_str = str;
 				tmp_str.erase(index_of_assign);
-				regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)(\\()([\\w\\-]+)(\\,)([\\w\\-]+)(\\))";
+				regular = "([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)(\\()([\\w\\-]+)(\\,)([\\w\\-]+)(\\))";
 				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular))
 				{
 					throw MyException("Wrong instruction. Regular check error.");
@@ -1684,14 +1687,14 @@ void Interpretator::right_and_op_after(const std::string& str)
 	bool found_operation = false;
 	int index_of_find = -1;
 
-	for (int i = 0; i < this->value_of_oper_list - 1; i++) //в последнем элементе лежит знак операции присваивания, ее не нужно искать.
+	for (int i = 0; i < this->value_of_oper_list - 1; i++) //РІ РїРѕСЃР»РµРґРЅРµРј СЌР»РµРјРµРЅС‚Рµ Р»РµР¶РёС‚ Р·РЅР°Рє РѕРїРµСЂР°С†РёРё РїСЂРёСЃРІР°РёРІР°РЅРёСЏ, РµРµ РЅРµ РЅСѓР¶РЅРѕ РёСЃРєР°С‚СЊ.
 	{
 		if (str[0] != '(')
 		{
 			throw MyException("Wrong instruction. It starts not at '('.");
 		}
 		index_of_find = str.find(this->operations_list[i].first.first);
-		if (index_of_find != std::string::npos) //что-то нашлось
+		if (index_of_find != std::string::npos) //С‡С‚Рѕ-С‚Рѕ РЅР°С€Р»РѕСЃСЊ
 		{
 			first_operand_str.clear();
 			second_operand_str.clear();
@@ -1707,7 +1710,7 @@ void Interpretator::right_and_op_after(const std::string& str)
 					continue;
 				}
 
-				regular = "([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
+				regular = "([\\(])([\\w\\-]+)([\\,]*)([\\w]*)([\\)])([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)";
 				if (!std::regex_match(str.c_str(), result_of_reg, regular))
 				{
 					throw MyException("Wrong instruction. Regular check error.");
@@ -1765,7 +1768,7 @@ void Interpretator::right_and_op_after(const std::string& str)
 				}
 				tmp_str = str;
 				tmp_str.erase(index_of_assign);
-				regular = "([\\(])([\\w]*)([\\,]*)([\\w]*)([\\)])([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)";
+				regular = "([\\(])([\\w]*)([\\,]*)([\\w]*)([\\)])([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)";
 				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular))
 				{
 					throw MyException("Wrong operation. Please, check your instruction better.");
@@ -1877,7 +1880,7 @@ void Interpretator::right_and_op_between_unar_bef(const std::string& str)
 	for (int i = 0; i < this->value_of_oper_list - 1; i++)
 	{
 		index_of_find = str.find(this->operations_list[i].first.first);
-		if (index_of_find != std::string::npos) //что-то нашлось
+		if (index_of_find != std::string::npos) //С‡С‚Рѕ-С‚Рѕ РЅР°С€Р»РѕСЃСЊ
 		{
 
 			first_operand_str.clear();
@@ -1887,7 +1890,7 @@ void Interpretator::right_and_op_between_unar_bef(const std::string& str)
 			tmp_str.clear();
 
 			index_of_assign = str.find(assignment_symbol);
-			if (index_of_assign == std::string::npos) //output или error
+			if (index_of_assign == std::string::npos) //output РёР»Рё error
 			{
 
 				if (this->operations_list[i].first.second != "<<")  //(intmp)output;
@@ -1895,7 +1898,7 @@ void Interpretator::right_and_op_between_unar_bef(const std::string& str)
 					continue;
 				}
 
-				regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)";
+				regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)";
 				if (std::regex_match(str.c_str(), result_of_reg, regular)) // output(what_to_output);
 				{
 					if (result_of_reg[2] != this->operations_list[i].first.first)
@@ -1915,7 +1918,7 @@ void Interpretator::right_and_op_between_unar_bef(const std::string& str)
 				}
 				//else
 				//a output b;
-				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
+				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
 				if (std::regex_match(str.c_str(), result_of_reg, regular))
 				{
 					found_operation = true;
@@ -1933,7 +1936,7 @@ void Interpretator::right_and_op_between_unar_bef(const std::string& str)
 					throw MyException("Wrong output operation syntaxis. Please, try again. May be you have forgotten space symbols.");
 				}
 			}
-			else //значит, что-то нашлось с знаком равно.
+			else //Р·РЅР°С‡РёС‚, С‡С‚Рѕ-С‚Рѕ РЅР°С€Р»РѕСЃСЊ СЃ Р·РЅР°РєРѕРј СЂР°РІРЅРѕ.
 			{
 				for (int j = index_of_assign + assignment_symbol.length(); j < str.length(); j++)  //(a)input = asd2
 				{
@@ -1957,10 +1960,10 @@ void Interpretator::right_and_op_between_unar_bef(const std::string& str)
 				tmp_str = str;
 				tmp_str.erase(index_of_assign);
 
-				regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w]*)([ ]*)([\\)])([ ]*)"; //Отловим шаблон input
+				regular = "([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)([ ]*)([\\(])([ ]*)([\\w]*)([ ]*)([\\)])([ ]*)"; //РћС‚Р»РѕРІРёРј С€Р°Р±Р»РѕРЅ input
 				if (std::regex_match(tmp_str.c_str(), result_of_reg, regular))
 				{
-					//если нашлось, то это наш input или ошибка.
+					//РµСЃР»Рё РЅР°С€Р»РѕСЃСЊ, С‚Рѕ СЌС‚Рѕ РЅР°С€ input РёР»Рё РѕС€РёР±РєР°.
 					if (this->operations_list[i].first.second != ">>") //input(2) = addbar;
 					{
 						continue;
@@ -2000,9 +2003,9 @@ void Interpretator::right_and_op_between_unar_bef(const std::string& str)
 					data.insert(pair_data);
 					break;
 				}
-				//остальные операции (add, sub, mult и т.д.)
-				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
-				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //нашлась инструкция
+				//РѕСЃС‚Р°Р»СЊРЅС‹Рµ РѕРїРµСЂР°С†РёРё (add, sub, mult Рё С‚.Рґ.)
+				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
+				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //РЅР°С€Р»Р°СЃСЊ РёРЅСЃС‚СЂСѓРєС†РёСЏ
 				{
 					throw MyException("Error syntaxis of your instruction, please, check it out and try again.");
 				}
@@ -2061,7 +2064,7 @@ void Interpretator::right_and_op_between_unar_aft(const std::string& str)
 	for (int i = 0; i < this->value_of_oper_list - 1; i++)
 	{
 		index_of_find = str.find(this->operations_list[i].first.first);
-		if (index_of_find != std::string::npos) //что-то нашлось
+		if (index_of_find != std::string::npos) //С‡С‚Рѕ-С‚Рѕ РЅР°С€Р»РѕСЃСЊ
 		{
 
 			first_operand_str.clear();
@@ -2071,7 +2074,7 @@ void Interpretator::right_and_op_between_unar_aft(const std::string& str)
 			tmp_str.clear();
 
 			index_of_assign = str.find(assignment_symbol);
-			if (index_of_assign == std::string::npos) //output или error
+			if (index_of_assign == std::string::npos) //output РёР»Рё error
 			{
 
 				if (this->operations_list[i].first.second != "<<")  //(intmp)output;
@@ -2079,7 +2082,7 @@ void Interpretator::right_and_op_between_unar_aft(const std::string& str)
 					continue;
 				}
 
-				regular = "([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)";
+				regular = "([ ]*)([\\(])([ ]*)([\\w\\-]+)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)([ ]*)";
 				if (std::regex_match(str.c_str(), result_of_reg, regular)) // output(what_to_output);
 				{
 					if (result_of_reg[8] != this->operations_list[i].first.first)
@@ -2099,7 +2102,7 @@ void Interpretator::right_and_op_between_unar_aft(const std::string& str)
 				}
 				//else
 				//a output b;
-				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
+				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
 				if (std::regex_match(str.c_str(), result_of_reg, regular))
 				{
 					found_operation = true;
@@ -2117,7 +2120,7 @@ void Interpretator::right_and_op_between_unar_aft(const std::string& str)
 					throw MyException("Wrong output operation syntaxis. Please, try again. May be you have forgotten space symbols.");
 				}
 			}
-			else //значит, что-то нашлось с знаком равно.
+			else //Р·РЅР°С‡РёС‚, С‡С‚Рѕ-С‚Рѕ РЅР°С€Р»РѕСЃСЊ СЃ Р·РЅР°РєРѕРј СЂР°РІРЅРѕ.
 			{
 				for (int j = index_of_assign + assignment_symbol.length(); j < str.length(); j++)  //(a)input = asd2
 				{
@@ -2141,10 +2144,10 @@ void Interpretator::right_and_op_between_unar_aft(const std::string& str)
 				tmp_str = str;
 				tmp_str.erase(index_of_assign);
 
-				regular = "([ ]*)([\\(])([ ]*)([\\w]*)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]*)"; //Отловим шаблон input
+				regular = "([ ]*)([\\(])([ ]*)([\\w]*)([ ]*)([\\)])([ ]*)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)([ ]*)"; //РћС‚Р»РѕРІРёРј С€Р°Р±Р»РѕРЅ input
 				if (std::regex_match(tmp_str.c_str(), result_of_reg, regular))
 				{
-					//если нашлось, то это наш input или ошибка.
+					//РµСЃР»Рё РЅР°С€Р»РѕСЃСЊ, С‚Рѕ СЌС‚Рѕ РЅР°С€ input РёР»Рё РѕС€РёР±РєР°.
 					if (this->operations_list[i].first.second != ">>")
 					{
 						continue;
@@ -2182,9 +2185,9 @@ void Interpretator::right_and_op_between_unar_aft(const std::string& str)
 					data.insert(pair_data);
 					break;
 				}
-				//остальные операции (add, sub, mult и т.д.)
-				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\№\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
-				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //нашлась инструкция
+				//РѕСЃС‚Р°Р»СЊРЅС‹Рµ РѕРїРµСЂР°С†РёРё (add, sub, mult Рё С‚.Рґ.)
+				regular = "([ ]*)([\\w\\-]+)([ ]+)([\\w\\{\\}\\.\\/+\\-\\)\\`\\?\\(\\*\\=\\&\\%\\$\\<\\>\\,\\в„–\"\\#\\@\\!\\^]+)([ ]+)([\\w\\-]+)([ ]*)";
+				if (!std::regex_match(tmp_str.c_str(), result_of_reg, regular)) //РЅР°С€Р»Р°СЃСЊ РёРЅСЃС‚СЂСѓРєС†РёСЏ
 				{
 					throw MyException("Error syntaxis of your instruction, please, check it out and try again.");
 				}
@@ -2225,44 +2228,44 @@ void Interpretator::parse_and_solve(const std::string& str)
 {
 	if (this->is_res_left)
 	{
-		if (this->is_op_before && !this->is_op_between) 
+		if (this->is_op_before && !this->is_op_between)
 		{
-		/*
-		* perem = op(op1, op2); peremravnoop(op1, op2);
-		*
-		* output(perem, base); output(perem);
-		* peremravnoinput(base);  peremravnoinput();
-		*/
+			/*
+			* perem = op(op1, op2); peremravnoop(op1, op2);
+			*
+			* output(perem, base); output(perem);
+			* peremravnoinput(base);  peremravnoinput();
+			*/
 			left_and_op_before(str);
 		}
-		else if(this->is_op_after && !this->is_op_between)
+		else if (this->is_op_after && !this->is_op_between)
 		{
-		/*
-		* perem = (op1, op2)op; perem=(op1, op2)op;
-		*
-		* (perem, base)output; (perem)output;
-		* perem=(base)input;  perem=()input;
-		*/
+			/*
+			* perem = (op1, op2)op; perem=(op1, op2)op;
+			*
+			* (perem, base)output; (perem)output;
+			* perem=(base)input;  perem=()input;
+			*/
 			left_and_op_after(str);
 		}
 		else if (this->is_op_before && this->is_op_between)
 		{
-		/*
-		* perem = op1 op op2;;
-		* perem output base;
-		* output(perem)
-		* perem=input(base);  perem=input();
-		*/
+			/*
+			* perem = op1 op op2;;
+			* perem output base;
+			* output(perem)
+			* perem=input(base);  perem=input();
+			*/
 			left_and_op_between_unar_bef(str);
 		}
 		else if (this->is_op_after && this->is_op_between)
 		{
-		/*
-		* perem = op1 op op2;;
-		* perem output base;
-		* (perem)output
-		* perem=(base)input;  perem=()input;
-		*/
+			/*
+			* perem = op1 op op2;;
+			* perem output base;
+			* (perem)output
+			* perem=(base)input;  perem=()input;
+			*/
 			left_and_op_between_unar_aft(str);
 		}
 	}
@@ -2280,32 +2283,32 @@ void Interpretator::parse_and_solve(const std::string& str)
 		}
 		else if (this->is_op_after && !this->is_op_between)
 		{
-		/*
-		* (op1, op2)op = perem; (op1, op2)op ravno perem;
-		*
-		* (perem, base)output; (perem)output; ;
-		* (base)input = perem;  ()input = perem;
-		*/
+			/*
+			* (op1, op2)op = perem; (op1, op2)op ravno perem;
+			*
+			* (perem, base)output; (perem)output; ;
+			* (base)input = perem;  ()input = perem;
+			*/
 			right_and_op_after(str);
 		}
 		else if (this->is_op_before && this->is_op_between)
 		{
-		/*
-		* op1 op op2 = perem;
-		* perem output base;
-		* output(perem)
-		* input(base)=perem; input()=perem;
-		*/
-			right_and_op_between_unar_bef(str);	
+			/*
+			* op1 op op2 = perem;
+			* perem output base;
+			* output(perem)
+			* input(base)=perem; input()=perem;
+			*/
+			right_and_op_between_unar_bef(str);
 		}
 		else if (this->is_op_after && this->is_op_between)
 		{
-		/*
-		* op1 op op2 = perem;
-		* perem output base;
-		* (perem)output
-		* (base)input=perem; ()input=perem;
-		*/
+			/*
+			* op1 op op2 = perem;
+			* perem output base;
+			* (perem)output
+			* (base)input=perem; ()input=perem;
+			*/
 			right_and_op_between_unar_aft(str);
 		}
 	}
@@ -2318,7 +2321,7 @@ int add(const int first, const int second)
 }
 int mult(const int first, const int second)
 {
-	return first*second;
+	return first * second;
 }
 int sub(const int first, const int second)
 {
@@ -2380,7 +2383,7 @@ int my_xor(const int first, const int second)
 {
 	return first ^ second;
 }
-void Interpretator::init_operations() //Лист операций - это пара. Первый элемент - пара из синонима и операции непосредственно. Второй - указатель на функцию операции.
+void Interpretator::init_operations() //Р›РёСЃС‚ РѕРїРµСЂР°С†РёР№ - СЌС‚Рѕ РїР°СЂР°. РџРµСЂРІС‹Р№ СЌР»РµРјРµРЅС‚ - РїР°СЂР° РёР· СЃРёРЅРѕРЅРёРјР° Рё РѕРїРµСЂР°С†РёРё РЅРµРїРѕСЃСЂРµРґСЃС‚РІРµРЅРЅРѕ. Р’С‚РѕСЂРѕР№ - СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ РѕРїРµСЂР°С†РёРё.
 {
 	operations_list[0].second = add;
 	operations_list[0].first.second = "+";
@@ -2410,8 +2413,8 @@ int main(int argc, char* argv[]) //settings ---- instr_file
 	setlocale(LC_ALL, "");
 	std::string settings_file_name;
 	std::string instructions_file_name;
-	std::cout << yellow << "---------------------------------------------------------------------------" << white <<std::endl;
-	std::cout << yellow << "| Interpretator was made by: " << blue << "Kulikov Pavel.  Group: M80-211B-20. MAI-FIIT "  <<yellow << "|" << white << std::endl;
+	std::cout << yellow << "---------------------------------------------------------------------------" << white << std::endl;
+	std::cout << yellow << "| Interpretator was made by: " << blue << "Kulikov Pavel.  Group: M80-211B-20. MAI-FIIT " << yellow << "|" << white << std::endl;
 	std::cout << yellow << "---------------------------------------------------------------------------" << white << std::endl;
 
 	if (argc == 1)
@@ -2444,14 +2447,13 @@ int main(int argc, char* argv[]) //settings ---- instr_file
 		{
 			interpretator.set_settings(settings_file_name.c_str());
 		}
-		
 
 		interpretator.interpretate_instr(instructions_file_name.c_str()); //TODO!
 	}
 	catch (MyException& err)
 	{
 		std::cout << "Interpretate status: " << red << "Error." << white << std::endl;
-		std::cout << red << err.what_str() << white <<  std::endl;
+		std::cout << red << err.what_str() << white << std::endl;
 		return -1;
 	}
 
