@@ -12,14 +12,14 @@ output(E);]
 
 
 [left= op()]
-addbar= input(2);
+[addbar= input(2);
 output(addbar,3);
 output(100, 2);
 output(98);
 A= input(16); [10]
 B= input(2);  [1111]
 addbar= input(2);
-output(addbar);
+output(addbar);]
 [C = input();   [2]
 E = add(A, B);
 D = sub(B, C);
@@ -77,7 +77,7 @@ D output 10;
 output(F);]]
 
 [right= op()]
-[input() = addbar;
+input() = addbar;
 output(addbar, 2);
 output(98);
 add(addbar, 2 )=a;
@@ -93,7 +93,7 @@ output(D, 10);
 output(D);
 output(D);
 output(F);
-input() = a;]]
+input() = a;]
 
 [
 right=  ()op  -------   add   sum  --------    sub prod  ---   pow in_my_pow  ---  input in   ----   output print    ----   = ravno]

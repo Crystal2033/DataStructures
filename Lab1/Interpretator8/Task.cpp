@@ -14,7 +14,7 @@
 /// SavedSettings должен содержать какие-либо синонимы.
 /// </summary>
 
-class MyException : public std::exception
+class MyException final : public std::exception
 {
 private:
 	//const char* err_msg; \\problem with locale h
@@ -283,28 +283,46 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 	std::string synonims_line;
 	std::string buffer_str;
 	std::string synonims[value_of_stdrt_oper_name_bank];
-	file_std_settings.open("SavedSettings.txt");
-	if (!file_std_settings.is_open())
-	{
-		throw MyException("File SavedSettings.txt openning error.");
-	}
-	//int j = 0;
-	std::getline(file_std_settings, synonims_line, '\n');
-	if (synonims_line.size() == 0)
-	{
-		file_std_settings.close();
-		throw MyException("Bad SavedSettings.txt file, there are no synonims.");
-	}
-
-	get_synonims(synonims_line, synonims);
-	synonims_line.clear();
-	file_std_settings.close();
 
 	for (int i = 0; i < value_of_stdrt_oper_name_bank; i++)
 	{
-		standart_operations_name_bank[i] = synonims[i];
-		this->operations_list[i].first.first = synonims[i];
+		this->operations_list[i].first.first = standart_operations_name_bank[i];
 	}
+	//file_std_settings.open("SavedSettings.txt");
+	//if (!file_std_settings.is_open())
+	//{
+	//	for (int i = 0; i < value_of_stdrt_oper_name_bank; i++)
+	//	{
+	//		this->operations_list[i].first.first = standart_operations_name_bank[i];
+	//	}
+	//	//throw MyException("File SavedSettings.txt openning error.");
+	//}
+	//else
+	//{
+	//	std::getline(file_std_settings, synonims_line, '\n');
+	//	if (synonims_line.size() == 0)
+	//	{
+	//		file_std_settings.close();
+	//		for (int i = 0; i < value_of_stdrt_oper_name_bank; i++)
+	//		{
+	//			this->operations_list[i].first.first = standart_operations_name_bank[i];
+	//		}
+	//		//throw MyException("Bad SavedSettings.txt file, there are no synonims.");
+	//	}
+	//	else
+	//	{
+	//		get_synonims(synonims_line, synonims);
+	//		synonims_line.clear();
+	//		file_std_settings.close();
+
+
+	//		for (int i = 0; i < value_of_stdrt_oper_name_bank; i++)
+	//		{
+	//			standart_operations_name_bank[i] = synonims[i];
+	//			this->operations_list[i].first.first = synonims[i];
+	//		}
+	//	}
+	//}
 	//TAKING SAVED SYNONIMS
 
 	std::string instruction;
@@ -530,7 +548,8 @@ void Interpretator::set_settings(const char* settings_file_name = nullptr)
 		file_std_settings.open("SavedSettings.txt");
 		if (!file_std_settings.is_open())
 		{
-			throw MyException("File openning for reading saved settings error.");
+			return;
+			//throw MyException("File openning for reading saved settings error.");
 		}
 
 
