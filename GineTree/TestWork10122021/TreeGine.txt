@@ -1,0 +1,12 @@
+<Galya> <Helen>
+<Galya> <Andrew>
+<Liviya> <Sergey>
+<Vladimir> <Helen>
+<Sergey> <Pasha>
+<Helen> <Pasha>
+<Helen> <Julia>
+<Helen> <Roman>
+<Andrew> <Varya>
+<Andrew> <Vasilisa>
+<Andrew> <Alice>
+
