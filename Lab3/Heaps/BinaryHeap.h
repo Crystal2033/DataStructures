@@ -14,6 +14,7 @@ class BinaryHeap : public MergeableHeap<TKey, TValue>
 		TValue value;
 		HeapNode(const TKey& key, const TValue& value);
 		HeapNode() = default;
+		HeapNode(HeapNode* const& base_node);
 
 	};
 private:
@@ -49,6 +50,13 @@ BinaryHeap<TKey, TValue>::HeapNode::HeapNode(const TKey& key, const TValue& valu
 	this->key = key;
 	this->value = value;
 }
+
+template <typename TKey, typename TValue>
+BinaryHeap<TKey, TValue>::HeapNode::HeapNode(HeapNode* const& base_node)
+{
+	this->key = base_node->key;
+	this->value = base_node->value;
+}
 #pragma endregion
 
 #pragma region TestFunction
@@ -61,6 +69,10 @@ std::string BinaryHeap<TKey, TValue>::who_am_i() const
 template <typename TKey, typename TValue>
 void BinaryHeap<TKey, TValue>::print_heap() const
 {
+	if (heap_vector.empty())
+	{
+		std::cout << red << "Your heap is empty" << white << std::endl;
+	}
 	for (int i = 0; i < heap_vector.size(); i++)
 	{
 		std::cout << yellow << heap_vector[i]->key << " ";
@@ -175,6 +187,8 @@ void BinaryHeap<TKey, TValue>::merge(const MergeableHeap<TKey, TValue>* heap)
 		heap_vector.push_back(bin_second_heap->heap_vector[i]);
 		make_sift();
 	}
+
+	const_cast<BinaryHeap<TKey, TValue>*>(bin_second_heap)->heap_vector = std::vector<HeapNode*>();
 
 }
 
