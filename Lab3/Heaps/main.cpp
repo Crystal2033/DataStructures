@@ -1,7 +1,7 @@
 #include"Comparator.h"
 #include "BinaryHeap.h"
-#include "FibonacciHeap.h"
 #include "BinomialHeap.h"
+#include "FibonacciHeap.h"
 
 
 int main(int argc, char* argv[])
@@ -26,12 +26,16 @@ int main(int argc, char* argv[])
 		//std::cout << blue << "second_heap_ptr:" << white << std::endl;
 		//second_heap_ptr->print_heap();
 
-		////heap_ptr->merge(second_heap_ptr);
-		//
-		//std::cout << second_heap_ptr->get_data();
-		//binary_heap = reinterpret_cast<BinaryHeap<int, std::string>*>(heap_ptr);
-		//second_binary_heap = reinterpret_cast<BinaryHeap<int, std::string>*> (second_heap_ptr);
-		//binary_heap->operator=(second_binary_heap);
+
+		//heap_ptr->merge(second_heap_ptr);
+		//heap_ptr->print_heap();
+		//for (int i = 0; i < 19; i++)
+		//{
+		//	heap_ptr->remove();
+		//	std::cout << blue << "Current extremum is: " << cyan << heap_ptr->get_data() << white << std::endl;
+		//}
+		//heap_ptr->print_heap();
+		
 
 		//std::cout << blue << "after =:" << white << std::endl;
 		//second_heap_ptr->~MergeableHeap();
@@ -39,7 +43,7 @@ int main(int argc, char* argv[])
 		//second_binary_heap->print_heap();
 
 
-		Comparator<int>* comparator = new ComparatorInt;
+		/*Comparator<int>* comparator = new ComparatorInt;
 		BinomialHeap<int, std::string>* binom_heap;
 		BinomialHeap<int, std::string>* second_binom_heap;
 		MergeableHeap<int, std::string>* heap_ptr = binom_heap->create_object(comparator);
@@ -75,8 +79,50 @@ int main(int argc, char* argv[])
 
 		std::cout << std::endl << blue << "AFTER DELETE:" << white << std::endl;
 		heap_ptr->print_heap();
-		std::cout << yellow << "The extremum is: " << green << heap_ptr->get_data() << white << std::endl;
+		std::cout << yellow << "The extremum is: " << green << heap_ptr->get_data() << white << std::endl;*/
 		
+
+		Comparator<int>* comparator = new ComparatorInt(MAX);
+		FibonacciHeap<int, std::string>* fibon_heap;
+		FibonacciHeap<int, std::string>* second_fibon_heap;
+		MergeableHeap<int, std::string>* heap_ptr = fibon_heap->create_object(comparator);
+		MergeableHeap<int, std::string>* second_heap_ptr = second_fibon_heap->create_object(comparator);
+
+		for (int i = 6; i > -1; i--)
+		{
+			heap_ptr->insert(i, std::to_string(i));
+		}
+		
+		heap_ptr->print_heap();
+		heap_ptr->remove();
+		std::cout << green << "AFTER delete: " << white << std::endl;
+		heap_ptr->print_heap();
+		heap_ptr->remove();
+		std::cout << green << "AFTER delete: " << white << std::endl;
+		heap_ptr->print_heap();
+		heap_ptr->remove();
+		std::cout << green << "AFTER delete: " << white << std::endl;
+		heap_ptr->print_heap();
+		heap_ptr->remove();
+		std::cout << green << "AFTER delete: " << white << std::endl;
+		heap_ptr->print_heap();
+
+		heap_ptr->remove();
+		std::cout << green << "AFTER delete: " << white << std::endl;
+		heap_ptr->print_heap();
+		std::cout << blue << "Current extremum is: " << cyan << heap_ptr->get_data() << white << std::endl;
+		for (int i = 2; i < 30; i++)
+		{
+			heap_ptr->insert(i, std::to_string(i));
+		}
+		heap_ptr->print_heap();
+		std::cout << blue << "Current extremum is: " << cyan << heap_ptr->get_data() << white << std::endl;
+
+		for (int i = 29; i > 0; i--)
+		{
+			heap_ptr->remove();
+			std::cout << blue << "Current extremum is: " << cyan << heap_ptr->get_data() << white << std::endl;
+		}
 		delete comparator;
 	}
 	catch (AddExists<int>& err)

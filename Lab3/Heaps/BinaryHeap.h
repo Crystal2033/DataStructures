@@ -154,6 +154,8 @@ BinaryHeap<TKey, TValue>& BinaryHeap<TKey, TValue>::operator=(const BinaryHeap<T
 template <typename TKey, typename TValue>
 void BinaryHeap<TKey, TValue>::insert(const TKey& key, const TValue& value)
 {
+	/*auto start = std::chrono::high_resolution_clock::now();
+	auto iterator = this->checker_map.find(key);*/
 	auto iterator = this->checker_map.find(key);
 	if (iterator != this->checker_map.end())
 	{
@@ -169,7 +171,6 @@ void BinaryHeap<TKey, TValue>::insert(const TKey& key, const TValue& value)
 	}
 
 	make_sift();
-	
 }
 #pragma endregion
 
@@ -256,7 +257,7 @@ void BinaryHeap<TKey, TValue>::remove()
 	{
 		throw RemEmpty<TKey>("Removing from empty heap.");
 	}
-
+	delete heap_vector[0];
 	heap_vector[0] = heap_vector[heap_vector.size() - 1];
 	checker_map.erase(heap_vector[0]->key);
 	heap_vector.pop_back();

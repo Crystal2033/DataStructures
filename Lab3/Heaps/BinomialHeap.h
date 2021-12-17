@@ -35,7 +35,9 @@ private:
 	void copy_list_to_root_list(std::list<HeapNode*>* const& list_for_copy);
 	//BinomialHeap(const BinomialHeap* second_heap); //TODO
 	//BinomialHeap<TKey, TValue>& operator=(const BinomialHeap* second_heap); //TODO
-
+	void print_child(std::list<HeapNode*>* children_ptr, int counter) const;
+	void remove_root_list();
+	void remove_child(std::list<HeapNode*>* children_ptr);
 
 public:
 	static MergeableHeap<TKey, TValue>* create_object(Comparator<TKey>* comparator);
@@ -44,11 +46,10 @@ public:
 	std::string who_am_i() const override;
 	TValue get_data() const override;
 	void print_heap() const override;
-	void print_child(std::list<HeapNode*>* children_ptr, int counter) const;
 	void remove() override;
+
 	~BinomialHeap();
-	void remove_root_list();
-	void remove_child(std::list<HeapNode*>* children_ptr);
+	
 
 };
 
@@ -99,7 +100,6 @@ void BinomialHeap<TKey, TValue>::print_child(std::list<HeapNode*>* children_ptr,
 		}
 		std::cout << cyan << "Level: " << green << counter << yellow << " [" << (*iterator)->key << " : " << (*iterator)->value << "]," << cyan << " degree =  "  << blue << (*iterator)->degree<< white << std::endl;
 	}
-	
 }
 
 
@@ -109,7 +109,7 @@ void BinomialHeap<TKey, TValue>::print_child(std::list<HeapNode*>* children_ptr,
 template <typename TKey, typename TValue>
 MergeableHeap<TKey, TValue>* BinomialHeap<TKey, TValue>::create_object(Comparator<TKey>* comparator)
 {
-	return new BinomialHeap(comparator);
+	return new BinomialHeap<TKey, TValue>(comparator);
 }
 #pragma endregion
 
@@ -436,15 +436,17 @@ void BinomialHeap<TKey, TValue>::remove()
 		}
 		if ((*it)->key == extremum_root->key && !deleted)
 		{
+			checker_map.erase(extremum_root->key);
 			if ((*it)->children_ptr->empty()) //we don`t have to merge
 			{
+				delete* it;
 				it = root_list.erase(it);
-
 				find_new_extremum_in_list(root_list);
 				return;
 			}
 			children_binom_heap->copy_list_to_root_list((*it)->children_ptr);
 			extremum_root = nullptr;
+			delete* it;
 			it = root_list.erase(it);
 			deleted = true;
 			continue;
