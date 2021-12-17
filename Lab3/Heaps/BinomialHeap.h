@@ -33,7 +33,8 @@ private:
 	BinomialHeap(Comparator<TKey>* comparator);
 
 	void copy_list_to_root_list(std::list<HeapNode*>* const& list_for_copy);
-	//BinomialHeap(const BinomialHeap* second_heap);
+	//BinomialHeap(const BinomialHeap* second_heap); //TODO
+	//BinomialHeap<TKey, TValue>& operator=(const BinomialHeap* second_heap); //TODO
 
 
 public:
@@ -46,6 +47,7 @@ public:
 	void print_child(std::list<HeapNode*>* children_ptr, int counter) const;
 	void remove() override;
 	~BinomialHeap();
+	void remove_root_list();
 	void remove_child(std::list<HeapNode*>* children_ptr);
 
 };
@@ -122,6 +124,12 @@ BinomialHeap<TKey, TValue>::BinomialHeap(Comparator<TKey>* comparator)
 template <typename TKey, typename TValue>
 BinomialHeap<TKey, TValue>::~BinomialHeap()
 {
+	remove_root_list();
+}
+
+template <typename TKey, typename TValue>
+void BinomialHeap<TKey, TValue>::remove_root_list()
+{
 	for (auto iterator = root_list.begin(); iterator != root_list.end(); iterator++)
 	{
 		remove_child((*iterator)->children_ptr);
@@ -129,6 +137,7 @@ BinomialHeap<TKey, TValue>::~BinomialHeap()
 		delete (*iterator);
 	}
 }
+
 
 template <typename TKey, typename TValue>
 void BinomialHeap<TKey, TValue>::remove_child(std::list<HeapNode*>* children_ptr)

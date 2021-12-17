@@ -6,30 +6,38 @@
 
 int main(int argc, char* argv[])
 {
-	//std::cout << green << "Hello world!" << white << std::endl;
 	try
 	{
-		/*Comparator<int>* comparator = new ComparatorInt;
-		BinaryHeap<int, std::string>* binary_heap;
-		BinaryHeap<int, std::string>* second_binary_heap;
-		MergeableHeap<int, std::string>* heap_ptr = binary_heap->create_object(comparator);
-		MergeableHeap<int, std::string>* second_heap_ptr = second_binary_heap->create_object(comparator);
-		for (int i = 0; i < 10; i++)
-		{
-			heap_ptr->insert(i, std::to_string(i));
-		}
-		heap_ptr->print_heap();
-		for (int i = 10; i < 20; i++)
-		{
-			second_heap_ptr->insert(i, std::to_string(i));
-		}
-		second_heap_ptr->print_heap();
+		//Comparator<int>* comparator = new ComparatorInt;
+		//BinaryHeap<int, std::string>* binary_heap;
+		//BinaryHeap<int, std::string>* second_binary_heap;
+		//MergeableHeap<int, std::string>* heap_ptr = binary_heap->create_object(comparator);
+		//MergeableHeap<int, std::string>* second_heap_ptr = second_binary_heap->create_object(comparator);
+		//for (int i = 0; i < 10; i++)
+		//{
+		//	heap_ptr->insert(i, std::to_string(i));
+		//}
+		//std::cout << blue << "Heap_ptr:" << white << std::endl;
+		//heap_ptr->print_heap();
+		//for (int i = 10; i < 20; i++)
+		//{
+		//	second_heap_ptr->insert(i, std::to_string(i));
+		//}
+		//std::cout << blue << "second_heap_ptr:" << white << std::endl;
+		//second_heap_ptr->print_heap();
 
-		heap_ptr->merge(second_heap_ptr);
+		////heap_ptr->merge(second_heap_ptr);
+		//
+		//std::cout << second_heap_ptr->get_data();
+		//binary_heap = reinterpret_cast<BinaryHeap<int, std::string>*>(heap_ptr);
+		//second_binary_heap = reinterpret_cast<BinaryHeap<int, std::string>*> (second_heap_ptr);
+		//binary_heap->operator=(second_binary_heap);
 
-		heap_ptr->print_heap();
-		std::cout << second_heap_ptr->get_data();
-		second_heap_ptr->remove();*/
+		//std::cout << blue << "after =:" << white << std::endl;
+		//second_heap_ptr->~MergeableHeap();
+		//binary_heap->print_heap();
+		//second_binary_heap->print_heap();
+
 
 		Comparator<int>* comparator = new ComparatorInt;
 		BinomialHeap<int, std::string>* binom_heap;
@@ -68,7 +76,7 @@ int main(int argc, char* argv[])
 		std::cout << std::endl << blue << "AFTER DELETE:" << white << std::endl;
 		heap_ptr->print_heap();
 		std::cout << yellow << "The extremum is: " << green << heap_ptr->get_data() << white << std::endl;
-
+		
 		delete comparator;
 	}
 	catch (AddExists<int>& err)

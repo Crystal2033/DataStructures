@@ -14,7 +14,7 @@ class BinaryHeap : public MergeableHeap<TKey, TValue>
 		TValue value;
 		HeapNode(const TKey& key, const TValue& value);
 		HeapNode() = default;
-		HeapNode(HeapNode* const& base_node);
+		HeapNode(const HeapNode* base_node);
 
 	};
 private:
@@ -24,7 +24,7 @@ private:
 
 
 	BinaryHeap(Comparator<TKey>* comparator);
-	BinaryHeap(const BinaryHeap* second_heap);
+	BinaryHeap(const BinaryHeap<TKey, TValue>* second_heap);
 	
 	void heapify(int position);
 	
@@ -39,7 +39,8 @@ public:
 	void print_heap() const override;
 	void remove() override;
 	~BinaryHeap();
-	BinaryHeap& operator=(BinaryHeap* const& second_heap);
+	void delete_object();
+	BinaryHeap<TKey, TValue>& operator=(const BinaryHeap* second_heap);
 
 };
 
@@ -52,7 +53,7 @@ BinaryHeap<TKey, TValue>::HeapNode::HeapNode(const TKey& key, const TValue& valu
 }
 
 template <typename TKey, typename TValue>
-BinaryHeap<TKey, TValue>::HeapNode::HeapNode(HeapNode* const& base_node)
+BinaryHeap<TKey, TValue>::HeapNode::HeapNode(const HeapNode* base_node)
 {
 	this->key = base_node->key;
 	this->value = base_node->value;
@@ -98,17 +99,22 @@ BinaryHeap<TKey, TValue>::BinaryHeap(Comparator<TKey>* comparator)
 }
 
 template <typename TKey, typename TValue>
-BinaryHeap<TKey, TValue>::BinaryHeap(const BinaryHeap* second_heap)
+BinaryHeap<TKey, TValue>::BinaryHeap(const BinaryHeap<TKey, TValue>* second_heap)
 {
 	this->comparator = second_heap->comparator;
-	this->checker_map(second_heap->checker_map);
-	this->heap_vector(second_heap->heap_vector);
+	std::map<TKey, TKey> new_map(second_heap->checker_map);
+	checker_map = new_map;
+	for (int i = 0; i < second_heap->heap_vector.size(); i++)
+	{
+		HeapNode* new_node = new HeapNode(second_heap->heap_vector[i]);
+		heap_vector.push_back(new_node);
+	}
 }
 
 template <typename TKey, typename TValue>
 BinaryHeap<TKey, TValue>::~BinaryHeap()
 {
-	for (int i = heap_vector.size() - 1; i > 0 ; i--)
+	for (int i = heap_vector.size() - 1; i >= 0 ; i--)
 	{
 		checker_map.erase(heap_vector[i]->key);
 		delete heap_vector[i];
@@ -117,9 +123,30 @@ BinaryHeap<TKey, TValue>::~BinaryHeap()
 }
 
 template <typename TKey, typename TValue>
-BinaryHeap<TKey, TValue>& BinaryHeap<TKey, TValue>::operator=(BinaryHeap<TKey, TValue>* const& second_heap)
+void BinaryHeap<TKey, TValue>::delete_object()
 {
-	return BinaryHeap<TKey, TValue>(second_heap);
+	for (int i = heap_vector.size() - 1; i >= 0; i--)
+	{
+		checker_map.erase(heap_vector[i]->key);
+		delete heap_vector[i];
+		heap_vector.pop_back();
+	}
+}
+
+template <typename TKey, typename TValue>
+BinaryHeap<TKey, TValue>& BinaryHeap<TKey, TValue>::operator=(const BinaryHeap<TKey, TValue>* second_heap)
+{
+	this->delete_object();
+
+	this->comparator = second_heap->comparator;
+	std::map<TKey, TKey> new_map(second_heap->checker_map);
+	checker_map = new_map;
+	for (int i = 0; i < second_heap->heap_vector.size(); i++)
+	{
+		HeapNode* new_node = new HeapNode(second_heap->heap_vector[i]);
+		heap_vector.push_back(new_node);
+	}
+	return *this;
 }
 #pragma endregion
 
